@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Heliance — Crypto Platform</title>
-<link rel="icon" type="image/svg+xml" href="logo.svg">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&family=Bungee&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -106,16 +105,16 @@
 
   /* ===== USER DASHBOARD ===== */
   .dash-body { display:flex; flex:1; }
-  .sidebar { width:240px; background:var(--bg2); border-right:1px solid var(--border); padding:24px 16px; display:flex; flex-direction:column; gap:4px; }
+  .sidebar { width:240px; background:var(--bg2); border-right:1px solid var(--border); padding:24px 16px; display:flex; flex-direction:column; gap:4px; transition: width 0.3s ease; }
   .sidebar-item { display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:10px; cursor:pointer; color:var(--muted); font-weight:600; font-size:0.95rem; transition:all 0.3s; letter-spacing:0.5px; }
   .sidebar-item:hover { background:var(--panel); color:var(--text); }
   .sidebar-item.active { background:rgba(0,245,196,0.1); color:var(--accent); border-left:3px solid var(--accent); }
   .sidebar-icon { font-size:1.2rem; }
   .sidebar-sep { height:1px; background:var(--border); margin:12px 0; }
-  .main-content { flex:1; padding:32px 36px; overflow-y:auto; }
+  .main-content { flex:1; padding:32px 36px; overflow-y:auto; transition: padding 0.3s ease; }
 
   /* ===== STATS CARDS ===== */
-  .stats-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:20px; margin-bottom:32px; }
+  .stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px; }
   .stat-card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:20px; position:relative; overflow:hidden; transition:all 0.3s; display: flex; flex-direction: column; container-type: inline-size; min-width: 0; }
   .stat-card:hover { border-color:var(--accent); transform:translateY(-3px); box-shadow:var(--glow); }
   .stat-card::before { content:''; position:absolute; top:0; right:0; width:80px; height:80px; background:radial-gradient(circle, rgba(0,245,196,0.1), transparent); border-radius:50%; }
@@ -124,9 +123,9 @@
   .stat-change { font-size:0.85rem; margin-top:8px; font-weight:600; }
   .up { color:var(--green); } .down { color:var(--red); }
 
-  /* ===== CHARTS ===== */
+  /* ===== CHARTS & TABLES ===== */
   .charts-grid { display:grid; grid-template-columns:2fr 1fr; gap:20px; margin-bottom:28px; }
-  .chart-card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:24px; position: relative; }
+  .chart-card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:24px; position: relative; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .chart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
   .chart-title { font-family:'Orbitron'; font-size:0.9rem; color:var(--accent); letter-spacing:2px; }
   .chart-tabs { display:flex; gap:6px; }
@@ -134,7 +133,6 @@
   .chart-tab.active { background:var(--accent2); border-color:var(--accent2); color:#fff; }
   .chart-container { position: relative; width: 100%; height: 220px; }
 
-  /* ===== PORTFOLIO TABLE ===== */
   .section-title { font-family:'Orbitron'; font-size:1rem; color:var(--accent); letter-spacing:2px; margin-bottom:20px; }
   .crypto-table { width:100%; border-collapse:collapse; }
   .crypto-table th { text-align:left; padding:12px 16px; font-size:0.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; border-bottom:1px solid var(--border); }
@@ -207,15 +205,25 @@
 
   /* ===== RESPONSIVE ===== */
   @media(max-width:900px){
-    .stats-grid{grid-template-columns:1fr 1fr;}
-    .charts-grid{grid-template-columns:1fr;}
     .admin-grid{grid-template-columns:1fr;}
     .withdraw-grid{grid-template-columns:1fr;}
     .tier-grid{grid-template-columns:1fr !important; gap:18px !important;}
-    .sidebar{width:60px;}
-    .sidebar-item span:not(.sidebar-icon){display:none;}
-    nav{padding:16px 20px;}
-    .main-content{padding:20px;}
+    
+    .sidebar { width: 70px; padding: 20px 8px; }
+    .sidebar-item { justify-content: center; padding: 12px; }
+    .sidebar-item span:not(.sidebar-icon) { display: none; }
+    .main-content { padding: 16px; }
+    .nav-right { gap: 10px; }
+    .nav-badge { display: none; }
+  }
+
+  @media(max-width: 600px) {
+    nav { padding: 12px 16px; }
+    .logo { font-size: 1.1rem; letter-spacing: 1px; }
+    .stat-value { font-size: 1.2rem; }
+    .charts-grid { grid-template-columns: 1fr; } 
+    .tier-grid { grid-template-columns: 1fr !important; text-align: center; }
+    #nextTierAmount { font-size: 0.7rem; }
   }
 
   /* ===== TIER BADGES ===== */
@@ -321,6 +329,7 @@
   .ticker-item .sym { color:var(--text); font-weight:700; }
   .ticker-item .price { color:var(--accent); }
 </style>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 </head>
 <body>
 
@@ -353,7 +362,7 @@
           </svg>
         </div>
         <h1>THE <span>HELIANCE</span></h1>
-        <p>CRYPTO PLATFORM</p>
+        <p>DECENTRALIZED CRYPTO PLATFORM</p>
       </div>
       <div class="tab-switch">
         <button class="active" onclick="switchTab('login')">LOGIN</button>
