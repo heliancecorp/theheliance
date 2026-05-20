@@ -328,6 +328,8 @@
   .tier-platinum { color:#e5e4e2; border-color:#a8b2c1; background:rgba(168,178,193,0.15); text-shadow:0 0 10px rgba(229,228,226,0.7); }
   .tier-diamond  { color:#b9f2ff; border-color:#b9f2ff; background:rgba(185,242,255,0.1); text-shadow:0 0 12px rgba(185,242,255,0.8); animation:tierPulse 2.5s infinite; }
   .tier-bluediamond { color:#4a9eff; border-color:#4a9eff; background:linear-gradient(135deg, rgba(74,158,255,0.2), rgba(0,245,196,0.15)); text-shadow:0 0 14px rgba(74,158,255,0.9); animation:tierPulse 1.8s infinite; box-shadow:0 0 20px rgba(74,158,255,0.4); }
+  .badge-verified   { color:#00e676; border-color:#00e676; background:rgba(0,230,118,0.1); text-shadow:0 0 8px rgba(0,230,118,0.5); }
+  .badge-unverified { color:#ff3860; border-color:#ff3860; background:rgba(255,56,96,0.1); text-shadow:0 0 8px rgba(255,56,96,0.4); }
   @keyframes tierPulse { 0%,100%{filter:brightness(1);} 50%{filter:brightness(1.3);} }
 
   .tier-info-card { background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:20px; }
@@ -547,6 +549,26 @@
         </div>
 
         <div id="regTierRows" style="display:flex;flex-direction:column;gap:5px;">
+          <div class="reg-tier-row" data-key="unverified" data-min="0" style="border-color:rgba(255,56,96,0.3);background:rgba(255,56,96,0.05);">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="tier-badge badge-unverified" style="font-size:0.72rem;padding:3px 8px;">🔒 Unverified</span>
+              <span class="reg-tier-min" style="color:var(--muted);">$0</span>
+            </div>
+            <div style="text-align:right;font-size:0.78rem;">
+              <div class="tier-mult" style="font-size:0.78rem;color:var(--red);">No withdrawals</div>
+              <div class="reg-tier-feature">Deposit to verify</div>
+            </div>
+          </div>
+          <div class="reg-tier-row" data-key="verified" data-min="1000" style="border-color:rgba(0,230,118,0.3);background:rgba(0,230,118,0.05);">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="tier-badge badge-verified" style="font-size:0.72rem;padding:3px 8px;">✅ Verified</span>
+              <span class="reg-tier-min" style="color:var(--green);">$1,000+</span>
+            </div>
+            <div style="text-align:right;font-size:0.78rem;">
+              <div class="tier-mult" style="font-size:0.78rem;color:var(--green);">Withdrawals unlocked</div>
+              <div class="reg-tier-feature">Full account access</div>
+            </div>
+          </div>
           <div class="reg-tier-row" data-key="bronze" data-min="1000">
             <div style="display:flex;align-items:center;gap:8px;">
               <span class="tier-badge tier-bronze" style="font-size:0.72rem;padding:3px 8px;">🥉 Bronze</span>
@@ -663,6 +685,7 @@
     <div class="nav-right">
       <div class="nav-badge">⚡ LIVE MARKET</div>
       <span id="userTierBadge" class="tier-badge tier-bronze">🥉 Bronze</span>
+      <span id="userVerifiedBadge" class="tier-badge badge-unverified" style="font-size:0.65rem;padding:3px 8px;">🔒 Unverified</span>
       
       <div class="nav-user dropdown" id="userDropdownBtn" onclick="toggleDropdown(event)">
         <div class="avatar" id="userAvatar">U</div>
@@ -735,6 +758,7 @@
           <div class="chart-header">
             <div class="chart-title">MEMBERSHIP TIER</div>
             <span id="dashTierBadge" class="tier-badge tier-bronze">🥉 Bronze</span>
+            <span id="dashVerifiedBadge" class="tier-badge badge-unverified" style="font-size:0.72rem;padding:3px 10px;">🔒 Unverified</span>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center;" class="tier-grid">
             <div>
@@ -879,6 +903,17 @@
       <!-- WITHDRAW TAB -->
       <div id="tab-withdraw" style="display:none">
         <div class="section-title">WITHDRAWAL REQUEST</div>
+
+        <!-- Unverified warning banner -->
+        <div id="withdrawUnverifiedBanner" style="display:none; margin-bottom:24px; padding:18px 22px; border-radius:14px; border:1px solid rgba(255,56,96,0.4); background:rgba(255,56,96,0.08); align-items:center; gap:16px; flex-wrap:wrap;">
+          <div style="font-size:2rem;">🔒</div>
+          <div style="flex:1; min-width:200px;">
+            <div style="font-family:'Orbitron'; font-size:0.9rem; font-weight:700; color:var(--red); letter-spacing:2px; margin-bottom:4px;">NOT ELIGIBLE FOR WITHDRAWAL</div>
+            <div style="font-size:0.88rem; color:var(--muted); line-height:1.5;">Your account is <strong style="color:var(--red);">Unverified</strong>. You must deposit a minimum of <strong style="color:var(--text);">$1,000 USD</strong> and have it approved before you can withdraw funds.</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openDepositModal()" style="white-space:nowrap;">💳 Deposit Now</button>
+        </div>
+
         <div class="withdraw-grid">
           <div class="chart-card">
             <h3 style="font-family:'Orbitron';font-size:0.9rem;color:var(--accent);letter-spacing:2px;margin-bottom:20px;">WITHDRAW FUNDS</h3>
@@ -1882,6 +1917,19 @@ function updateTierUI(tierInfo, invested){
   const dashBadge = document.getElementById('dashTierBadge');
   if(dashBadge){ dashBadge.textContent = badgeText; dashBadge.className = 'tier-badge ' + (current.cls || ''); }
 
+  // Verified / Unverified — requires $1,000+ invested (approved deposit)
+  const isVerified = invested >= 1000;
+  const verifiedText = isVerified ? '✅ Verified' : '🔒 Unverified';
+  const verifiedCls  = isVerified ? 'tier-badge badge-verified' : 'tier-badge badge-unverified';
+  const navVBadge  = document.getElementById('userVerifiedBadge');
+  const dashVBadge = document.getElementById('dashVerifiedBadge');
+  if(navVBadge){  navVBadge.textContent  = verifiedText; navVBadge.className  = verifiedCls + ' ' + (navVBadge.getAttribute('style') ? '' : ''); navVBadge.style.fontSize='0.65rem'; navVBadge.style.padding='3px 8px'; }
+  if(dashVBadge){ dashVBadge.textContent = verifiedText; dashVBadge.className = verifiedCls; dashVBadge.style.fontSize='0.72rem'; dashVBadge.style.padding='3px 10px'; }
+
+  // Show/hide withdrawal not-eligible banner
+  const wBanner = document.getElementById('withdrawUnverifiedBanner');
+  if(wBanner) wBanner.style.display = isVerified ? 'none' : 'flex';
+
   document.getElementById('tierMultiplier').textContent = isNone ? '—' : fmtMult(multiplier);
   document.getElementById('tierMultiplierLabel').textContent = isNone
     ? 'Deposit $1,000+ to activate Bronze tier'
@@ -2629,6 +2677,7 @@ function toggleWithdrawMethod() {
 async function submitWithdraw(){
   const u = registeredUsers[currentUser.email];
   const withdrawAmount = parseFloat(document.getElementById('withdrawAmount').value);
+  if((u.invested||0) < 1000){ showNotif('❌ Your account is Unverified. Deposit at least $1,000 to unlock withdrawals.','error'); return; }
   if(isNaN(withdrawAmount) || withdrawAmount < 1000){ showNotif('Minimum withdrawal is $1,000','error'); return; }
   if(!u.balance || u.balance < withdrawAmount){ showNotif('Insufficient balance','error'); return; }
 
@@ -2686,7 +2735,7 @@ function updateAdminPanel(){
   const ul = document.getElementById('adminUserList');
   if(ul) ul.innerHTML = users.length===0?'<p style="color:var(--muted)">No users registered yet</p>':users.map(([email,u])=>{
     const tierInfo = getTierForAmount(u.invested||0);
-    return `<div class="user-row"><div class="user-info"><div class="user-status"></div><div class="avatar" style="width:28px;height:28px;font-size:0.75rem;">${u.name[0]}</div><div><div style="font-weight:700;font-size:0.9rem">${u.name}</div><div style="color:var(--muted);font-size:0.8rem;font-family:'Share Tech Mono'">${email}</div></div></div><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end;"><span class="tier-badge ${tierInfo.current.cls}">${tierInfo.current.icon} ${tierInfo.current.name}</span><span style="font-family:'Share Tech Mono';font-size:0.85rem;color:var(--accent)">$${(u.balance||0).toLocaleString()}</span><button class="btn btn-sm btn-outline" onclick="openEditUser('${email}')">✏️ EDIT</button><button class="btn btn-sm btn-red" onclick="showNotif('User suspended','success')">SUSPEND</button></div></div>`;
+    return `<div class="user-row"><div class="user-info"><div class="user-status"></div><div class="avatar" style="width:28px;height:28px;font-size:0.75rem;">${u.name[0]}</div><div><div style="font-weight:700;font-size:0.9rem">${u.name}</div><div style="color:var(--muted);font-size:0.8rem;font-family:'Share Tech Mono'">${email}</div></div></div><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end;"><span class="tier-badge ${tierInfo.current.cls}">${tierInfo.current.icon} ${tierInfo.current.name}</span><span class="tier-badge ${(u.invested||0)>=1000?'badge-verified':'badge-unverified'}" style="font-size:0.68rem;padding:3px 8px;">${(u.invested||0)>=1000?'✅ Verified':'🔒 Unverified'}</span><span style="font-family:'Share Tech Mono';font-size:0.85rem;color:var(--accent)">$${(u.balance||0).toLocaleString()}</span><button class="btn btn-sm btn-outline" onclick="openEditUser('${email}')">✏️ EDIT</button><button class="btn btn-sm btn-red" onclick="showNotif('User suspended','success')">SUSPEND</button></div></div>`;
   }).join('');
 
   const dl = document.getElementById('adminDepositList');
