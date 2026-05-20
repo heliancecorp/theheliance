@@ -889,9 +889,29 @@
                 <option value="bnb">BNB Chain</option>
               </select>
             </div>
+            <div class="form-group" id="withdrawBankTypeGroup">
+              <label>Bank Name</label>
+              <select id="withdrawBankType" style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;color:var(--text);font-family:'Rajdhani';font-size:1rem;width:100%;outline:none;">
+                <option value="">— Select Bank —</option>
+                <option value="BDO">BDO Unibank</option>
+                <option value="BPI">BPI (Bank of the Philippine Islands)</option>
+                <option value="Metrobank">Metrobank</option>
+                <option value="Landbank">Landbank of the Philippines</option>
+                <option value="PNB">PNB (Philippine National Bank)</option>
+                <option value="Security Bank">Security Bank</option>
+                <option value="UnionBank">UnionBank</option>
+                <option value="RCBC">RCBC</option>
+                <option value="Chinabank">China Banking Corporation</option>
+                <option value="EastWest Bank">EastWest Bank</option>
+                <option value="GCash">GCash</option>
+                <option value="Maya">Maya (PayMaya)</option>
+                <option value="GoTyme">GoTyme Bank</option>
+                <option value="Seabank">SeaBank</option>
+              </select>
+            </div>
             <div class="form-group">
               <label>Amount (USD)</label>
-              <input type="number" id="withdrawAmount" placeholder="Min. $100 USD" min="100" style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;color:var(--text);font-family:'Rajdhani';font-size:1rem;width:100%;outline:none;">
+              <input type="number" id="withdrawAmount" placeholder="Min. $1,000 USD" min="1000" style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;color:var(--text);font-family:'Rajdhani';font-size:1rem;width:100%;outline:none;">
             </div>
             <div class="form-group">
               <label id="withdrawAddressLabel">Bank Account Number</label>
@@ -2582,10 +2602,12 @@ async function confirmDeposit(){
 function toggleWithdrawMethod() {
   const method = document.getElementById('withdrawMethodSelect').value;
   if(method === 'gotyme') {
+    document.getElementById('withdrawBankTypeGroup').style.display = 'block';
     document.getElementById('withdrawAddressLabel').textContent = 'QrPh Account Number';
     document.getElementById('withdrawAddress').placeholder = 'Account Number';
     document.getElementById('withdrawNameGroup').style.display = 'block';
   } else {
+    document.getElementById('withdrawBankTypeGroup').style.display = 'none';
     document.getElementById('withdrawAddressLabel').textContent = 'BNB Wallet Address';
     document.getElementById('withdrawAddress').placeholder = '0x...';
     document.getElementById('withdrawNameGroup').style.display = 'none';
@@ -2595,19 +2617,31 @@ function toggleWithdrawMethod() {
 async function submitWithdraw(){
   const u = registeredUsers[currentUser.email];
   const withdrawAmount = parseFloat(document.getElementById('withdrawAmount').value);
-  if(isNaN(withdrawAmount) || withdrawAmount < 100){ showNotif('Minimum withdrawal is $100','error'); return; }
+  if(isNaN(withdrawAmount) || withdrawAmount < 1000){ showNotif('Minimum withdrawal is $1,000','error'); return; }
   if(!u.balance || u.balance < withdrawAmount){ showNotif('Insufficient balance','error'); return; }
 
-  const method = document.getElementById('withdrawMethodSelect').value === 'gotyme' ? 'QrPh' : 'BNB Chain';
+  const isBank = document.getElementById('withdrawMethodSelect').value === 'gotyme';
+  const method = isBank ? 'Bank Transfer' : 'BNB Chain';
+  const bankName = isBank ? (document.getElementById('withdrawBankType').value || '') : '';
+  const accountNum = document.getElementById('withdrawAddress').value.trim();
+  const accountName = isBank ? document.getElementById('withdrawName').value.trim() : '';
+
+  if(isBank && !bankName){ showNotif('Please select a bank','error'); return; }
+  if(!accountNum){ showNotif(isBank ? 'Please enter your account number' : 'Please enter your wallet address','error'); return; }
+  if(isBank && !accountName){ showNotif('Please enter the account name','error'); return; }
+
   const txn = {
-    id:       genId(),
-    user:     currentUser.email,
-    name:     currentUser.name || currentUser.email,
-    type:     'WITHDRAW',
-    amount:   withdrawAmount,
-    date:     new Date().toLocaleDateString(),
-    status:   'Pending',
-    method:   method,
+    id:          genId(),
+    user:        currentUser.email,
+    name:        currentUser.name || currentUser.email,
+    type:        'WITHDRAW',
+    amount:      withdrawAmount,
+    date:        new Date().toLocaleDateString(),
+    status:      'Pending',
+    method:      method,
+    bankName:    bankName,
+    accountNum:  accountNum,
+    accountName: accountName,
     submittedAt: Date.now()
   };
 
@@ -2620,6 +2654,7 @@ async function submitWithdraw(){
   document.getElementById('withdrawAmount').value = '';
   document.getElementById('withdrawAddress').value = '';
   document.getElementById('withdrawName').value = '';
+  document.getElementById('withdrawBankType').value = '';
   document.getElementById('withdrawModal').classList.add('open');
   showNotif('✅ Withdrawal requested! Admin will process it soon.','success');
 }
@@ -2653,7 +2688,7 @@ function updateAdminPanel(){
   if(wl){
     const pending_wds = withdrawals.filter(w=>w.status==='Pending');
     wl.innerHTML = pending_wds.length===0?'<p style="color:var(--muted);font-size:0.9rem">No pending withdrawals</p>':
-      pending_wds.map((w)=>`<div class="user-row" style="margin-bottom:8px;"><div><span class="txn-type" style="background:rgba(255,56,96,0.15);color:var(--red);border-color:rgba(255,56,96,0.3);">WITHDRAW</span> · ${w.user} · <strong style="color:var(--red)">$${w.amount.toLocaleString()}</strong> · ${w.date}${w.method?' · '+w.method:''}</div><div style="display:flex;gap:8px;"><button class="btn btn-sm btn-primary" onclick="approveWithdrawal('${w.id}')">✅ APPROVE</button><button class="btn btn-sm btn-red" onclick="rejectWithdrawal('${w.id}')">❌ REJECT</button></div></div>`).join('');
+      pending_wds.map((w)=>`<div class="user-row" style="margin-bottom:8px;flex-wrap:wrap;gap:10px;"><div style="flex:1;min-width:200px;"><span class="txn-type" style="background:rgba(255,56,96,0.15);color:var(--red);border-color:rgba(255,56,96,0.3);">WITHDRAW</span> · <strong>${w.name||w.user}</strong> <span style="color:var(--muted);font-size:0.8rem;">(${w.user})</span> · <strong style="color:var(--red)">$${w.amount.toLocaleString()}</strong> · ${w.date}<br><span style="font-family:'Share Tech Mono';font-size:0.78rem;color:var(--muted);">${w.method||''}${w.bankName?' · '+w.bankName:''}${w.accountNum?' · Acct: '+w.accountNum:''}${w.accountName?' · '+w.accountName:''}</span></div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><button class="btn btn-sm btn-primary" onclick="approveWithdrawal('${w.id}')">✅ APPROVE</button><button class="btn btn-sm btn-red" onclick="rejectWithdrawal('${w.id}')">❌ REJECT</button></div></div>`).join('');
   }
 
   const tl = document.getElementById('adminTxnList');
