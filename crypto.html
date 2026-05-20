@@ -1141,6 +1141,10 @@
         <div id="adminDepositList"><p style="color:var(--muted);font-size:0.9rem;">No pending deposits</p></div>
       </div>
       <div class="admin-card" style="grid-column:1/-1;">
+        <h3>PENDING WITHDRAWAL REQUESTS</h3>
+        <div id="adminWithdrawalList"><p style="color:var(--muted);font-size:0.9rem;">No pending withdrawals</p></div>
+      </div>
+      <div class="admin-card" style="grid-column:1/-1;">
         <h3>RECENT TRANSACTIONS</h3>
         <div class="txn-list" id="adminTxnList"><p style="color:var(--muted);font-size:0.9rem;">No transactions yet</p></div>
       </div>
@@ -1212,6 +1216,44 @@
       <p style="color:var(--muted);font-size:0.9rem;">Admin will process within 24-48 hours</p>
     </div>
     <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="closeModal('withdrawModal')">OK, GOT IT</button>
+  </div>
+</div>
+
+<!-- ===== EDIT USER MODAL ===== -->
+<div class="modal-overlay" id="editUserModal">
+  <div class="modal" style="max-width:440px;">
+    <button class="modal-close" onclick="closeModal('editUserModal')">✕</button>
+    <h2>✏️ EDIT USER</h2>
+    <div id="editUserInfo" style="margin-bottom:18px;padding:12px;background:var(--bg);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:1rem;" id="editUserName">—</div>
+      <div style="color:var(--muted);font-size:0.82rem;font-family:'Share Tech Mono';" id="editUserEmail">—</div>
+      <div style="margin-top:8px;font-size:0.85rem;">Current Balance: <strong id="editUserCurrentBal" style="color:var(--accent);">$0</strong></div>
+    </div>
+    <div class="form-group">
+      <label>Set New Balance (USD)</label>
+      <input type="number" id="editUserBalInput" placeholder="e.g. 5000" min="0" style="width:100%;">
+    </div>
+    <div class="form-group">
+      <label>Set New Invested Amount (USD) <span style="color:var(--muted);font-size:0.78rem;">(affects tier)</span></label>
+      <input type="number" id="editUserInvestedInput" placeholder="e.g. 3000" min="0" style="width:100%;">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="saveUserEdit()">💾 SAVE CHANGES</button>
+      <button class="btn btn-outline" style="flex:0.4;justify-content:center;" onclick="closeModal('editUserModal')">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RECEIPT VIEWER MODAL ===== -->
+<div class="modal-overlay" id="receiptViewerModal" onclick="if(event.target===this)closeModal('receiptViewerModal')">
+  <div class="modal" style="max-width:520px;text-align:center;">
+    <button class="modal-close" onclick="closeModal('receiptViewerModal')">✕</button>
+    <h2>🧾 DEPOSIT RECEIPT</h2>
+    <div id="receiptViewerMeta" style="margin-bottom:14px;font-size:0.85rem;color:var(--muted);font-family:'Share Tech Mono';"></div>
+    <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--bg);max-height:65vh;overflow-y:auto;">
+      <img id="receiptViewerImg" src="" alt="Receipt" style="width:100%;display:block;border-radius:12px;">
+    </div>
+    <a id="receiptDownloadLink" href="" download="receipt.jpg" class="btn btn-outline" style="margin-top:16px;width:100%;justify-content:center;">⬇ DOWNLOAD RECEIPT</a>
   </div>
 </div>
 
@@ -2486,6 +2528,19 @@ async function confirmDeposit(){
     closeModal('depositModal'); return;
   }
 
+  // Convert receipt image to base64 so admin can view it
+  let receiptBase64 = null;
+  try {
+    receiptBase64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error('Failed to read receipt'));
+      reader.readAsDataURL(receiptFile);
+    });
+  } catch(e) {
+    showNotif('Could not read receipt file — try again','error'); return;
+  }
+
   const method = document.getElementById('depositMethodSelect').value === 'gotyme' ? 'QrPh' : 'BNB Chain';
   const txn = {
     id:          genId(),
@@ -2496,6 +2551,8 @@ async function confirmDeposit(){
     date:        new Date().toLocaleDateString(),
     status:      'Pending',
     method:      method,
+    receipt:     receiptBase64,
+    receiptName: receiptFile.name,
     submittedAt: Date.now(),
     fromRegister: isFromRegister
   };
@@ -2582,14 +2639,21 @@ function updateAdminPanel(){
   const ul = document.getElementById('adminUserList');
   if(ul) ul.innerHTML = users.length===0?'<p style="color:var(--muted)">No users registered yet</p>':users.map(([email,u])=>{
     const tierInfo = getTierForAmount(u.invested||0);
-    return `<div class="user-row"><div class="user-info"><div class="user-status"></div><div class="avatar" style="width:28px;height:28px;font-size:0.75rem;">${u.name[0]}</div><div><div style="font-weight:700;font-size:0.9rem">${u.name}</div><div style="color:var(--muted);font-size:0.8rem;font-family:'Share Tech Mono'">${email}</div></div></div><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end;"><span class="tier-badge ${tierInfo.current.cls}">${tierInfo.current.icon} ${tierInfo.current.name}</span><span style="font-family:'Share Tech Mono';font-size:0.85rem;color:var(--accent)">$${(u.balance||0).toLocaleString()}</span><button class="btn btn-sm btn-outline" onclick="showNotif('User details viewed','success')">VIEW</button><button class="btn btn-sm btn-red" onclick="showNotif('User suspended','success')">SUSPEND</button></div></div>`;
+    return `<div class="user-row"><div class="user-info"><div class="user-status"></div><div class="avatar" style="width:28px;height:28px;font-size:0.75rem;">${u.name[0]}</div><div><div style="font-weight:700;font-size:0.9rem">${u.name}</div><div style="color:var(--muted);font-size:0.8rem;font-family:'Share Tech Mono'">${email}</div></div></div><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end;"><span class="tier-badge ${tierInfo.current.cls}">${tierInfo.current.icon} ${tierInfo.current.name}</span><span style="font-family:'Share Tech Mono';font-size:0.85rem;color:var(--accent)">$${(u.balance||0).toLocaleString()}</span><button class="btn btn-sm btn-outline" onclick="openEditUser('${email}')">✏️ EDIT</button><button class="btn btn-sm btn-red" onclick="showNotif('User suspended','success')">SUSPEND</button></div></div>`;
   }).join('');
 
   const dl = document.getElementById('adminDepositList');
   if(dl){
     const pending_deps = deposits.filter(d=>d.status==='Pending');
     dl.innerHTML = pending_deps.length===0?'<p style="color:var(--muted);font-size:0.9rem">No pending deposits</p>':
-      pending_deps.map((d,i)=>`<div class="user-row" style="margin-bottom:8px;"><div><span class="txn-type">DEPOSIT</span> · ${d.user} · <strong style="color:var(--accent)">$${d.amount.toLocaleString()}</strong> · ${d.date}</div><div style="display:flex;gap:8px;"><button class="btn btn-sm btn-primary" onclick="approveDeposit(${deposits.indexOf(d)})">✅ APPROVE</button><button class="btn btn-sm btn-red" onclick="rejectDeposit(${deposits.indexOf(d)})">❌ REJECT</button></div></div>`).join('');
+      pending_deps.map((d)=>`<div class="user-row" style="margin-bottom:8px;flex-wrap:wrap;gap:10px;"><div style="flex:1;min-width:200px;"><span class="txn-type">DEPOSIT</span> · <strong>${d.name||d.user}</strong> <span style="color:var(--muted);font-size:0.8rem;">(${d.user})</span> · <strong style="color:var(--accent)">$${d.amount.toLocaleString()}</strong> · ${d.method||''} · ${d.date}</div><div style="display:flex;gap:8px;flex-wrap:wrap;">${d.receipt?`<button class="btn btn-sm btn-outline" onclick="viewReceipt('${d.id}')">🧾 RECEIPT</button>`:''}<button class="btn btn-sm btn-primary" onclick="approveDeposit(${deposits.indexOf(d)})">✅ APPROVE</button><button class="btn btn-sm btn-red" onclick="rejectDeposit(${deposits.indexOf(d)})">❌ REJECT</button></div></div>`).join('');
+  }
+
+  const wl = document.getElementById('adminWithdrawalList');
+  if(wl){
+    const pending_wds = withdrawals.filter(w=>w.status==='Pending');
+    wl.innerHTML = pending_wds.length===0?'<p style="color:var(--muted);font-size:0.9rem">No pending withdrawals</p>':
+      pending_wds.map((w)=>`<div class="user-row" style="margin-bottom:8px;"><div><span class="txn-type" style="background:rgba(255,56,96,0.15);color:var(--red);border-color:rgba(255,56,96,0.3);">WITHDRAW</span> · ${w.user} · <strong style="color:var(--red)">$${w.amount.toLocaleString()}</strong> · ${w.date}${w.method?' · '+w.method:''}</div><div style="display:flex;gap:8px;"><button class="btn btn-sm btn-primary" onclick="approveWithdrawal('${w.id}')">✅ APPROVE</button><button class="btn btn-sm btn-red" onclick="rejectWithdrawal('${w.id}')">❌ REJECT</button></div></div>`).join('');
   }
 
   const tl = document.getElementById('adminTxnList');
@@ -2637,6 +2701,80 @@ async function approveAll(){
   const pending = deposits.filter(d=>d.status==='Pending');
   for(const d of pending) await approveDeposit(deposits.indexOf(d));
   showNotif(pending.length>0?`✅ ${pending.length} deposit(s) approved!`:'No pending deposits','success');
+}
+
+// ===== WITHDRAWAL ADMIN =====
+async function approveWithdrawal(id){
+  const wd = withdrawals.find(w=>w.id===id);
+  if(!wd) return;
+  wd.status = 'Approved';
+  const u = registeredUsers[wd.user];
+  if(u){
+    u.balance = Math.max(0, (u.balance||0) - wd.amount);
+  }
+  if(window.HelianceDB && window.HelianceDB.ready()){
+    await Promise.all([
+      window.HelianceDB.updateWithdrawal(id, { status:'Approved' }),
+      u ? window.HelianceDB.saveUser(wd.user, u) : Promise.resolve()
+    ]);
+  }
+  showNotif(`✅ Withdrawal approved — $${wd.amount.toLocaleString()} processed for ${wd.user}`,'success');
+  updateAdminPanel();
+}
+
+async function rejectWithdrawal(id){
+  const wd = withdrawals.find(w=>w.id===id);
+  if(!wd) return;
+  wd.status = 'Rejected';
+  if(window.HelianceDB && window.HelianceDB.ready()){
+    await window.HelianceDB.updateWithdrawal(id, { status:'Rejected' });
+  }
+  showNotif(`❌ Withdrawal rejected for ${wd.user}`,'error');
+  updateAdminPanel();
+}
+
+// ===== VIEW RECEIPT =====
+function viewReceipt(depositId){
+  const dep = deposits.find(d=>d.id===depositId);
+  if(!dep||!dep.receipt){ showNotif('No receipt found for this deposit','error'); return; }
+  document.getElementById('receiptViewerImg').src = dep.receipt;
+  document.getElementById('receiptDownloadLink').href = dep.receipt;
+  document.getElementById('receiptDownloadLink').download = dep.receiptName || 'receipt.jpg';
+  document.getElementById('receiptViewerMeta').textContent = `${dep.name||dep.user} · $${dep.amount.toLocaleString()} · ${dep.method||''} · ${dep.date}`;
+  document.getElementById('receiptViewerModal').classList.add('open');
+}
+
+// ===== EDIT USER =====
+let _editUserEmail = null;
+function openEditUser(email){
+  const u = registeredUsers[email];
+  if(!u) return;
+  _editUserEmail = email;
+  document.getElementById('editUserName').textContent = u.name;
+  document.getElementById('editUserEmail').textContent = email;
+  document.getElementById('editUserCurrentBal').textContent = '$' + (u.balance||0).toLocaleString();
+  document.getElementById('editUserBalInput').value = u.balance||0;
+  document.getElementById('editUserInvestedInput').value = u.invested||0;
+  document.getElementById('editUserModal').classList.add('open');
+}
+
+async function saveUserEdit(){
+  if(!_editUserEmail) return;
+  const u = registeredUsers[_editUserEmail];
+  if(!u) return;
+  const newBal = parseFloat(document.getElementById('editUserBalInput').value);
+  const newInv = parseFloat(document.getElementById('editUserInvestedInput').value);
+  if(isNaN(newBal)||newBal<0){ showNotif('Enter a valid balance','error'); return; }
+  if(isNaN(newInv)||newInv<0){ showNotif('Enter a valid invested amount','error'); return; }
+  u.balance = newBal;
+  u.invested = newInv;
+  u.activeDeposit = newInv;
+  if(window.HelianceDB && window.HelianceDB.ready()){
+    await window.HelianceDB.saveUser(_editUserEmail, u);
+  }
+  showNotif(`✅ User ${u.name} updated — Balance: $${newBal.toLocaleString()}, Invested: $${newInv.toLocaleString()}`,'success');
+  closeModal('editUserModal');
+  updateAdminPanel();
 }
 
 // ===== CHARTS =====
