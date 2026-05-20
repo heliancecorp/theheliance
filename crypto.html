@@ -907,6 +907,8 @@
                 <option value="Maya">Maya (PayMaya)</option>
                 <option value="GoTyme">GoTyme Bank</option>
                 <option value="Seabank">SeaBank</option>
+                <option value="Tonik">Tonik Digital Bank</option>
+                <option value="Other">Other</option>
               </select>
             </div>
             <div class="form-group">
@@ -1261,6 +1263,16 @@
       <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="saveUserEdit()">💾 SAVE CHANGES</button>
       <button class="btn btn-outline" style="flex:0.4;justify-content:center;" onclick="closeModal('editUserModal')">CANCEL</button>
     </div>
+  </div>
+</div>
+
+<!-- ===== WITHDRAWAL VIEWER MODAL ===== -->
+<div class="modal-overlay" id="withdrawalViewerModal" onclick="if(event.target===this)closeModal('withdrawalViewerModal')">
+  <div class="modal" style="max-width:460px;">
+    <button class="modal-close" onclick="closeModal('withdrawalViewerModal')">✕</button>
+    <h2>💸 WITHDRAWAL DETAILS</h2>
+    <div id="withdrawalViewerContent" style="display:flex;flex-direction:column;gap:12px;margin-top:8px;"></div>
+    <div style="display:flex;gap:10px;margin-top:20px;" id="withdrawalViewerActions"></div>
   </div>
 </div>
 
@@ -2688,7 +2700,7 @@ function updateAdminPanel(){
   if(wl){
     const pending_wds = withdrawals.filter(w=>w.status==='Pending');
     wl.innerHTML = pending_wds.length===0?'<p style="color:var(--muted);font-size:0.9rem">No pending withdrawals</p>':
-      pending_wds.map((w)=>`<div class="user-row" style="margin-bottom:8px;flex-wrap:wrap;gap:10px;"><div style="flex:1;min-width:200px;"><span class="txn-type" style="background:rgba(255,56,96,0.15);color:var(--red);border-color:rgba(255,56,96,0.3);">WITHDRAW</span> · <strong>${w.name||w.user}</strong> <span style="color:var(--muted);font-size:0.8rem;">(${w.user})</span> · <strong style="color:var(--red)">$${w.amount.toLocaleString()}</strong> · ${w.date}<br><span style="font-family:'Share Tech Mono';font-size:0.78rem;color:var(--muted);">${w.method||''}${w.bankName?' · '+w.bankName:''}${w.accountNum?' · Acct: '+w.accountNum:''}${w.accountName?' · '+w.accountName:''}</span></div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><button class="btn btn-sm btn-primary" onclick="approveWithdrawal('${w.id}')">✅ APPROVE</button><button class="btn btn-sm btn-red" onclick="rejectWithdrawal('${w.id}')">❌ REJECT</button></div></div>`).join('');
+      pending_wds.map((w)=>`<div class="user-row" style="margin-bottom:8px;flex-wrap:wrap;gap:10px;"><div style="flex:1;min-width:200px;"><span class="txn-type" style="background:rgba(255,56,96,0.15);color:var(--red);border-color:rgba(255,56,96,0.3);">WITHDRAW</span> · <strong>${w.name||w.user}</strong> <span style="color:var(--muted);font-size:0.8rem;">(${w.user})</span> · <strong style="color:var(--red)">$${w.amount.toLocaleString()}</strong> · ${w.date}<br><span style="font-family:'Share Tech Mono';font-size:0.78rem;color:var(--muted);">${w.method||''}${w.bankName?' · '+w.bankName:''}${w.accountNum?' · Acct: '+w.accountNum:''}${w.accountName?' · '+w.accountName:''}</span></div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><button class="btn btn-sm btn-outline" onclick="viewWithdrawal('${w.id}')">👁 VIEW</button><button class="btn btn-sm btn-primary" onclick="approveWithdrawal('${w.id}')">✅ APPROVE</button><button class="btn btn-sm btn-red" onclick="rejectWithdrawal('${w.id}')">❌ REJECT</button></div></div>`).join('');
   }
 
   const tl = document.getElementById('adminTxnList');
@@ -2766,6 +2778,42 @@ async function rejectWithdrawal(id){
   }
   showNotif(`❌ Withdrawal rejected for ${wd.user}`,'error');
   updateAdminPanel();
+}
+
+// ===== VIEW WITHDRAWAL =====
+function viewWithdrawal(id){
+  const w = withdrawals.find(w=>w.id===id);
+  if(!w) return;
+
+  const row = (label, value, color='var(--text)') =>
+    `<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+      <span style="font-size:0.78rem;color:var(--muted);font-family:'Share Tech Mono';letter-spacing:1px;">${label}</span>
+      <span style="font-weight:700;color:${color};font-size:0.95rem;text-align:right;">${value}</span>
+    </div>`;
+
+  document.getElementById('withdrawalViewerContent').innerHTML = `
+    ${row('USER', w.name || w.user)}
+    ${row('EMAIL', w.user, 'var(--muted)')}
+    ${row('AMOUNT', '$' + w.amount.toLocaleString(), 'var(--red)')}
+    ${row('DATE', w.date)}
+    ${row('STATUS', w.status, w.status==='Approved'?'var(--green)':w.status==='Rejected'?'var(--red)':'var(--gold)')}
+    ${row('METHOD', w.method || '—')}
+    ${w.bankName ? row('BANK', w.bankName, 'var(--accent)') : ''}
+    ${w.accountNum ? row('ACCOUNT NUMBER', w.accountNum, 'var(--accent)') : ''}
+    ${w.accountName ? row('ACCOUNT NAME', w.accountName) : ''}
+  `;
+
+  const actions = document.getElementById('withdrawalViewerActions');
+  if(w.status === 'Pending'){
+    actions.innerHTML = `
+      <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="approveWithdrawal('${w.id}');closeModal('withdrawalViewerModal')">✅ APPROVE</button>
+      <button class="btn btn-red" style="flex:1;justify-content:center;" onclick="rejectWithdrawal('${w.id}');closeModal('withdrawalViewerModal')">❌ REJECT</button>
+    `;
+  } else {
+    actions.innerHTML = `<button class="btn btn-outline" style="flex:1;justify-content:center;" onclick="closeModal('withdrawalViewerModal')">CLOSE</button>`;
+  }
+
+  document.getElementById('withdrawalViewerModal').classList.add('open');
 }
 
 // ===== VIEW RECEIPT =====
