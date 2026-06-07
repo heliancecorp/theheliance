@@ -2176,8 +2176,17 @@ function buildDashNotifications(){
     // Grab the sender's name from the admin input, default to 'Admin' if left blank
     const senderNameDisplay = g.senderName ? g.senderName : 'Admin';
     
-    // The exact phrasing you requested
-    const pendingDesc = `You have Received <strong style="color:var(--gold);">$${(g.amount||0).toLocaleString()}</strong> from <strong>${senderNameDisplay}</strong>, you need to deposit 1000 usd first to receive the money`;
+    // Dynamic calculation: Calculate exactly how much is left to reach $1,000
+    const currentInvested = u.invested || 0;
+    const remainingNeeded = Math.max(0, 1000 - currentInvested);
+    
+    let pendingDesc = '';
+    if (isVerified) {
+      pendingDesc = `Before you can receive <strong style="color:var(--gold);">$${(g.amount||0).toLocaleString()}</strong>, it is currently queued and awaiting admin approval.`;
+    } else {
+      // Automatically subtracts what they already deposited (e.g., if deposited $200, tells them they need $800 more)
+      pendingDesc = `You have Received <strong style="color:var(--gold);">$${(g.amount||0).toLocaleString()}</strong> from <strong>${senderNameDisplay}</strong>, you need to deposit <strong style="color:var(--text);">${remainingNeeded.toLocaleString()} usd</strong> more first to receive the money.`;
+    }
     
     notifs.push({ 
       id: g.id, 
