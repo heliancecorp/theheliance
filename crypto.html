@@ -320,6 +320,35 @@
     .sidebar-item{font-size:0.6rem;}
   }
 
+  /* ===== DASHBOARD NOTIFICATION PANEL ===== */
+  .dash-notif-panel { display:flex; flex-direction:column; gap:10px; margin-bottom:24px; }
+  .dash-notif-item {
+    display:flex; align-items:flex-start; gap:14px; padding:14px 18px;
+    border-radius:14px; border:1px solid; position:relative; overflow:hidden;
+    animation:fadeUp 0.4s ease;
+  }
+  .dash-notif-item.approved  { border-color:rgba(0,230,118,0.35); background:rgba(0,230,118,0.06); }
+  .dash-notif-item.pending   { border-color:rgba(244,196,48,0.35); background:rgba(244,196,48,0.06); }
+  .dash-notif-item.rejected  { border-color:rgba(255,56,96,0.35);  background:rgba(255,56,96,0.06); }
+  .dash-notif-item.received  { border-color:rgba(0,245,196,0.35);  background:rgba(0,245,196,0.06); }
+  .dash-notif-icon { font-size:1.6rem; flex-shrink:0; margin-top:2px; }
+  .dash-notif-body { flex:1; min-width:0; }
+  .dash-notif-title { font-family:'Orbitron'; font-size:0.78rem; letter-spacing:1.5px; font-weight:700; margin-bottom:3px; }
+  .dash-notif-item.approved  .dash-notif-title { color:var(--green); }
+  .dash-notif-item.pending   .dash-notif-title { color:var(--gold); }
+  .dash-notif-item.rejected  .dash-notif-title { color:var(--red); }
+  .dash-notif-item.received  .dash-notif-title { color:var(--accent); }
+  .dash-notif-desc { font-size:0.88rem; color:var(--text); line-height:1.45; }
+  .dash-notif-meta { font-family:'Share Tech Mono'; font-size:0.72rem; color:var(--muted); margin-top:4px; }
+  .dash-notif-sender { font-family:'Rajdhani'; font-size:0.82rem; color:var(--accent); font-weight:700; margin-top:4px; }
+  .dash-notif-dismiss { background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.1rem; padding:4px; flex-shrink:0; margin-top:-2px; transition:color 0.2s; }
+  .dash-notif-dismiss:hover { color:var(--red); }
+  .dash-notif-pulse { position:absolute; top:12px; right:48px; width:8px; height:8px; border-radius:50%; animation:pulse 1.5s infinite; }
+  .dash-notif-item.approved .dash-notif-pulse { background:var(--green); }
+  .dash-notif-item.pending  .dash-notif-pulse { background:var(--gold); }
+  .dash-notif-item.rejected .dash-notif-pulse { background:var(--red); }
+  .dash-notif-item.received .dash-notif-pulse { background:var(--accent); }
+
   /* ===== TIER BADGES ===== */
   .tier-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:700; font-family:'Orbitron'; letter-spacing:1px; border:1px solid; text-transform:uppercase; }
   .tier-bronze   { color:#cd7f32; border-color:#cd7f32; background:rgba(205,127,50,0.1);  text-shadow:0 0 8px rgba(205,127,50,0.5); }
@@ -729,6 +758,20 @@
 
       <!-- DASHBOARD TAB -->
       <div id="tab-dashboard">
+
+        <!-- UNVERIFIED BANNER -->
+        <div id="dashUnverifiedBanner" style="display:none;margin-bottom:20px;padding:16px 20px;border-radius:14px;border:1px solid rgba(255,56,96,0.4);background:rgba(255,56,96,0.07);display:none;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="font-size:1.8rem;flex-shrink:0;">🔒</div>
+          <div style="flex:1;min-width:200px;">
+            <div style="font-family:'Orbitron';font-size:0.85rem;font-weight:700;color:var(--red);letter-spacing:2px;margin-bottom:4px;">NOT ELIGIBLE FOR WITHDRAWAL</div>
+            <div style="font-size:0.88rem;color:var(--muted);line-height:1.5;">Your account is <strong style="color:var(--red);">Unverified</strong>. You must deposit a minimum of <strong style="color:var(--text);">$1,000 USD</strong> and have it approved before you can withdraw funds.</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openDepositModal()" style="white-space:nowrap;flex-shrink:0;">💳 Deposit Now</button>
+        </div>
+
+        <!-- TRANSACTION NOTIFICATIONS -->
+        <div id="dashNotifPanel" class="dash-notif-panel" style="display:none;"></div>
+
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-label">Wallet Balance</div>
@@ -1227,8 +1270,8 @@
     <button class="modal-close" onclick="closeModal('addBalanceModal')">✕</button>
     <h2>➕ ADD BALANCE TO USER</h2>
     <p style="color:var(--muted);font-size:0.88rem;margin-bottom:20px;line-height:1.5;">
-      If the user is <strong style="color:var(--green);">Verified</strong> — balance is added immediately and shows as <strong>Approved</strong> in their history.<br>
-      If <strong style="color:var(--red);">Unverified</strong> — it stays <strong>Pending</strong> until they deposit $1,000+ and you approve it.
+      If the user is <strong style="color:var(--green);">Verified</strong> ($1,000+ deposited) — balance is added immediately and marked <strong>Approved</strong>.<br>
+      If <strong style="color:var(--red);">Unverified</strong> — the grant stays <strong>Pending</strong> until the user deposits $1,000+ and it is approved.
     </p>
     <div class="form-group">
       <label>Select User</label>
@@ -1239,6 +1282,10 @@
     <div class="form-group">
       <label>Amount (USD)</label>
       <input type="number" id="addBalAmount" placeholder="e.g. 500" min="1" style="width:100%;">
+    </div>
+    <div class="form-group">
+      <label>Sender Name <span style="color:var(--muted);font-size:0.78rem;">(shown in user's notification only)</span></label>
+      <input type="text" id="addBalSenderName" placeholder="e.g. Juan dela Cruz" style="width:100%;">
     </div>
     <div id="addBalUserStatus" style="display:none;padding:10px 14px;border-radius:10px;margin-bottom:16px;font-size:0.85rem;"></div>
     <div style="display:flex;gap:10px;">
@@ -1347,6 +1394,73 @@
     <h2>💸 WITHDRAWAL DETAILS</h2>
     <div id="withdrawalViewerContent" style="display:flex;flex-direction:column;gap:12px;margin-top:8px;"></div>
     <div style="display:flex;gap:10px;margin-top:20px;" id="withdrawalViewerActions"></div>
+  </div>
+</div>
+
+<!-- ===== EDIT TRANSACTION HISTORY MODAL (ADMIN) ===== -->
+<div class="modal-overlay" id="editTxnModal" onclick="if(event.target===this)closeModal('editTxnModal')">
+  <div class="modal" style="max-width:700px;width:100%;">
+    <button class="modal-close" onclick="closeModal('editTxnModal')">✕</button>
+    <h2>📋 EDIT TRANSACTION HISTORY</h2>
+    <div id="editTxnUserInfo" style="margin-bottom:16px;padding:12px 16px;background:var(--bg);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;gap:12px;">
+      <div class="avatar" id="editTxnAvatar" style="width:36px;height:36px;font-size:0.9rem;">U</div>
+      <div>
+        <div style="font-weight:700;font-size:1rem;" id="editTxnUserName">—</div>
+        <div style="color:var(--muted);font-size:0.82rem;font-family:'Share Tech Mono';" id="editTxnUserEmail">—</div>
+      </div>
+    </div>
+
+    <!-- Add new transaction -->
+    <div style="background:rgba(0,245,196,0.04);border:1px solid rgba(0,245,196,0.15);border-radius:12px;padding:18px;margin-bottom:16px;">
+      <div style="font-family:'Orbitron';font-size:0.8rem;color:var(--accent);letter-spacing:2px;margin-bottom:14px;">➕ ADD TRANSACTION</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label style="font-size:0.72rem;">Type</label>
+          <select id="newTxnType" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:'Rajdhani';font-size:0.95rem;width:100%;outline:none;">
+            <option value="DEPOSIT">DEPOSIT</option>
+            <option value="WITHDRAW">WITHDRAW</option>
+            <option value="RECEIVED">RECEIVED</option>
+            <option value="BUY">BUY</option>
+            <option value="SELL">SELL</option>
+            <option value="WHITELIST">WHITELIST</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label style="font-size:0.72rem;">Amount (USD)</label>
+          <input type="number" id="newTxnAmount" placeholder="e.g. 1000" min="0" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:'Rajdhani';font-size:0.95rem;width:100%;outline:none;">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label style="font-size:0.72rem;">Method / Note</label>
+          <input type="text" id="newTxnMethod" placeholder="e.g. BNB Chain" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:'Rajdhani';font-size:0.95rem;width:100%;outline:none;">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label style="font-size:0.72rem;">Status</label>
+          <select id="newTxnStatus" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:'Rajdhani';font-size:0.95rem;width:100%;outline:none;">
+            <option value="Approved">Approved</option>
+            <option value="Pending">Pending</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label style="font-size:0.72rem;">Date</label>
+          <input type="text" id="newTxnDate" placeholder="e.g. 6/7/2026" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:'Rajdhani';font-size:0.95rem;width:100%;outline:none;">
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="adminAddTxn()" style="white-space:nowrap;padding:10px 18px;">➕ Add</button>
+      </div>
+    </div>
+
+    <!-- Existing transactions list -->
+    <div style="font-family:'Orbitron';font-size:0.8rem;color:var(--gold);letter-spacing:2px;margin-bottom:10px;">EXISTING TRANSACTIONS</div>
+    <div id="editTxnList" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;padding-right:4px;">
+      <p style="color:var(--muted);font-size:0.9rem;">No transactions found.</p>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="saveEditedTxns()">💾 SAVE ALL CHANGES</button>
+      <button class="btn btn-outline" style="flex:0.4;justify-content:center;" onclick="closeModal('editTxnModal')">CANCEL</button>
+    </div>
   </div>
 </div>
 
@@ -1855,6 +1969,7 @@ async function launchUser(){
   }
 
   updateUserStats();
+  buildDashNotifications();
   initCharts();
   showTab('dashboard');
 }
@@ -1965,6 +2080,10 @@ function updateTierUI(tierInfo, invested){
   if(navVBadge){  navVBadge.textContent  = verifiedText; navVBadge.className  = verifiedCls + ' ' + (navVBadge.getAttribute('style') ? '' : ''); navVBadge.style.fontSize='0.65rem'; navVBadge.style.padding='3px 8px'; }
   if(dashVBadge){ dashVBadge.textContent = verifiedText; dashVBadge.className = verifiedCls; dashVBadge.style.fontSize='0.72rem'; dashVBadge.style.padding='3px 10px'; }
 
+  // Show/hide dashboard unverified banner
+  const dashBanner = document.getElementById('dashUnverifiedBanner');
+  if(dashBanner) dashBanner.style.display = isVerified ? 'none' : 'flex';
+
   // Show/hide withdrawal not-eligible banner
   const wBanner = document.getElementById('withdrawUnverifiedBanner');
   if(wBanner) wBanner.style.display = isVerified ? 'none' : 'flex';
@@ -2000,6 +2119,123 @@ function updateTierUI(tierInfo, invested){
   }
 }
 
+// ===== DASHBOARD NOTIFICATIONS =====
+let _dismissedNotifs = new Set();
+
+function buildDashNotifications(){
+  if(!currentUser) return;
+  const panel = document.getElementById('dashNotifPanel');
+  if(!panel) return;
+
+  const u = registeredUsers[currentUser.email];
+  const userEmail = currentUser.email;
+
+  const userDeposits    = deposits.filter(d => d.user === userEmail);
+  const userWithdrawals = withdrawals.filter(w => w.user === userEmail);
+  // Keep received (approved) and pending grants strictly separate
+  const receivedGrants  = (u.receivedGrants || []);
+  const pendingGrants   = (u.pendingGrants  || []);
+
+  const notifs = [];
+
+  userDeposits.forEach(d => {
+    if(_dismissedNotifs.has(d.id)) return;
+    if(d.type === 'DEPOSIT'){
+      if(d.status === 'Approved'){
+        notifs.push({ id:d.id, cls:'approved', icon:'✅', title:'DEPOSIT APPROVED',
+          desc:`Your deposit of <strong style="color:var(--green);">$${(d.amount||0).toLocaleString()}</strong> has been approved and credited to your wallet.`,
+          meta:`${d.method||'Bank'} · ${d.date||''}`, pulse:true });
+      } else if(d.status === 'Pending'){
+        notifs.push({ id:d.id, cls:'pending', icon:'⏳', title:'DEPOSIT PENDING',
+          desc:`Your deposit of <strong style="color:var(--gold);">$${(d.amount||0).toLocaleString()}</strong> is being reviewed by the admin.`,
+          meta:`${d.method||'Bank'} · ${d.date||''} · Awaiting approval`, pulse:true });
+      } else if(d.status === 'Rejected'){
+        notifs.push({ id:d.id, cls:'rejected', icon:'❌', title:'DEPOSIT REJECTED',
+          desc:`Your deposit of <strong style="color:var(--red);">$${(d.amount||0).toLocaleString()}</strong> was rejected. Please contact support.`,
+          meta:`${d.method||'Bank'} · ${d.date||''}`, pulse:false });
+      }
+    }
+  });
+
+  // Approved grants — money actually received
+  receivedGrants.forEach(g => {
+    if(_dismissedNotifs.has(g.id)) return;
+    const senderLine = g.senderName
+      ? `<div class="dash-notif-sender">💸 Sent by: ${g.senderName}</div>` : '';
+    notifs.push({ id:g.id, cls:'received', icon:'💰', title:'MONEY RECEIVED',
+      desc:`You received <strong style="color:var(--accent);">$${(g.amount||0).toLocaleString()}</strong> in your wallet.`,
+      meta:`${g.date||''} · Added by Admin`, senderLine, pulse:true, submittedAt: g.submittedAt||0 });
+  });
+
+  // Pending grants — unverified users waiting to hit minimum
+  // Pending grants — unverified users waiting to hit minimum
+  const isVerified = (u.invested||0) >= 1000;
+  pendingGrants.forEach(g => {
+    if(_dismissedNotifs.has(g.id)) return;
+    
+    // Grab the sender's name from the admin input, default to 'Admin' if left blank
+    const senderNameDisplay = g.senderName ? g.senderName : 'Admin';
+    
+    // The exact phrasing you requested
+    const pendingDesc = `You have Received <strong style="color:var(--gold);">$${(g.amount||0).toLocaleString()}</strong> from <strong>${senderNameDisplay}</strong>, you need to deposit 1000 usd first to receive the money`;
+    
+    notifs.push({ 
+      id: g.id, 
+      cls: 'pending', 
+      icon: '⏳', 
+      title: 'INCOMING PAYMENT PENDING',
+      desc: pendingDesc,
+      meta: `${g.date||''} · Awaiting deposit minimum`, 
+      pulse: true, 
+      submittedAt: g.submittedAt||0 
+    });
+  });
+
+  userWithdrawals.forEach(w => {
+    if(_dismissedNotifs.has(w.id)) return;
+    if(w.status === 'Approved'){
+      notifs.push({ id:w.id, cls:'approved', icon:'💸', title:'WITHDRAWAL APPROVED',
+        desc:`Your withdrawal of <strong style="color:var(--green);">$${(w.amount||0).toLocaleString()}</strong> has been approved and is being processed.`,
+        meta:`${w.method||''} · ${w.date||''}`, pulse:true });
+    } else if(w.status === 'Pending'){
+      notifs.push({ id:w.id, cls:'pending', icon:'⏳', title:'WITHDRAWAL PENDING',
+        desc:`Your withdrawal of <strong style="color:var(--gold);">$${(w.amount||0).toLocaleString()}</strong> is under review.`,
+        meta:`${w.method||''} · ${w.date||''} · Processing within 24-48 hours`, pulse:true });
+    } else if(w.status === 'Rejected'){
+      notifs.push({ id:w.id, cls:'rejected', icon:'❌', title:'WITHDRAWAL REJECTED',
+        desc:`Your withdrawal of <strong style="color:var(--red);">$${(w.amount||0).toLocaleString()}</strong> was rejected. Funds remain in your wallet.`,
+        meta:`${w.method||''} · ${w.date||''} · Contact support`, pulse:false });
+    }
+  });
+
+  const allTxns = [...userDeposits,...userWithdrawals,...receivedGrants,...pendingGrants];
+  notifs.sort((a,b)=>{
+    const ta=allTxns.find(x=>x.id===a.id), tb=allTxns.find(x=>x.id===b.id);
+    return ((tb&&tb.submittedAt)||0)-((ta&&ta.submittedAt)||0);
+  });
+
+  if(notifs.length===0){ panel.style.display='none'; return; }
+
+  panel.style.display='flex';
+  panel.innerHTML = notifs.map(n=>`
+    <div class="dash-notif-item ${n.cls}">
+      <div class="dash-notif-icon">${n.icon}</div>
+      <div class="dash-notif-body">
+        <div class="dash-notif-title">${n.title}</div>
+        <div class="dash-notif-desc">${n.desc}</div>
+        ${n.senderLine||''}
+        <div class="dash-notif-meta">${n.meta}</div>
+      </div>
+      ${n.pulse?`<div class="dash-notif-pulse"></div>`:''}
+      <button class="dash-notif-dismiss" onclick="dismissDashNotif('${n.id}')" title="Dismiss">✕</button>
+    </div>`).join('');
+}
+
+function dismissDashNotif(id){
+  _dismissedNotifs.add(id);
+  buildDashNotifications();
+}
+
 function showTab(tab){
   ['dashboard','portfolio','wallet','withdraw','history','support'].forEach(t=>{
     const el = document.getElementById('tab-'+t);
@@ -2009,7 +2245,7 @@ function showTab(tab){
   const idx = {'dashboard':0,'portfolio':1,'wallet':2,'history':3,'support':4}[tab];
   if(idx!==undefined) document.querySelectorAll('.sidebar-item')[idx].classList.add('active');
   
-  if(tab==='dashboard'){ buildMarketTable(); buildMemecoinPromo(); buildUpcomingMemes(); buildMyShop(); }
+  if(tab==='dashboard'){ buildMarketTable(); buildMemecoinPromo(); buildUpcomingMemes(); buildMyShop(); buildDashNotifications(); }
   if(tab==='portfolio') { buildPortfolioTable(); updatePortfolioCharts(); }
   if(tab==='history') buildHistoryTable();
   if(tab==='support') prefillSupportForm();
@@ -2990,7 +3226,7 @@ function renderAdminUsers(users){
   }
   ul.innerHTML = users.map(([email,u])=>{
     const tierInfo = getTierForAmount(u.invested||0);
-    return `<div class="user-row"><div class="user-info"><div class="user-status"></div><div class="avatar" style="width:28px;height:28px;font-size:0.75rem;">${u.name[0]}</div><div><div style="font-weight:700;font-size:0.9rem">${u.name}</div><div style="color:var(--muted);font-size:0.8rem;font-family:'Share Tech Mono'">${email}</div></div></div><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end;"><span class="tier-badge ${tierInfo.current.cls}">${tierInfo.current.icon} ${tierInfo.current.name}</span><span class="tier-badge ${(u.invested||0)>=1000?'badge-verified':'badge-unverified'}" style="font-size:0.68rem;padding:3px 8px;">${(u.invested||0)>=1000?'✅ Verified':'🔒 Unverified'}</span><span style="font-family:'Share Tech Mono';font-size:0.85rem;color:var(--accent)">$${(u.balance||0).toLocaleString()}</span><button class="btn btn-sm btn-outline" onclick="openEditUser('${email}')">✏️ EDIT</button><button class="btn btn-sm btn-red" onclick="showNotif('User suspended','success')">SUSPEND</button></div></div>`;
+    return `<div class="user-row"><div class="user-info"><div class="user-status"></div><div class="avatar" style="width:28px;height:28px;font-size:0.75rem;">${u.name[0]}</div><div><div style="font-weight:700;font-size:0.9rem">${u.name}</div><div style="color:var(--muted);font-size:0.8rem;font-family:'Share Tech Mono'">${email}</div></div></div><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end;"><span class="tier-badge ${tierInfo.current.cls}">${tierInfo.current.icon} ${tierInfo.current.name}</span><span class="tier-badge ${(u.invested||0)>=1000?'badge-verified':'badge-unverified'}" style="font-size:0.68rem;padding:3px 8px;">${(u.invested||0)>=1000?'✅ Verified':'🔒 Unverified'}</span><span style="font-family:'Share Tech Mono';font-size:0.85rem;color:var(--accent)">$${(u.balance||0).toLocaleString()}</span><button class="btn btn-sm btn-outline" onclick="openEditUser('${email}')">✏️ EDIT</button><button class="btn btn-sm" style="background:linear-gradient(135deg,var(--gold),#ff8c00);color:#000;" onclick="openEditTxnModal('${email}')">📋 HISTORY</button><button class="btn btn-sm btn-red" onclick="showNotif('User suspended','success')">SUSPEND</button></div></div>`;
   }).join('');
 }
 
@@ -3020,9 +3256,10 @@ function openAddBalanceModal(){
     statusEl.style.border = verified ? '1px solid rgba(0,230,118,0.3)' : '1px solid rgba(255,56,96,0.3)';
     statusEl.innerHTML = verified
       ? `<span style="color:var(--green);">✅ Verified</span> — Balance will be added <strong>immediately</strong> and marked <strong>Approved</strong>.`
-      : `<span style="color:var(--red);">🔒 Unverified</span> — Grant will be <strong>Pending</strong> until user deposits $1,000+ and you approve it.`;
+      : `<span style="color:var(--red);">🔒 Unverified</span> — Grant will be <strong>Pending</strong> until user deposits $1,000+ and it is approved.`;
   };
   document.getElementById('addBalAmount').value = '';
+  document.getElementById('addBalSenderName').value = '';
   document.getElementById('addBalUserStatus').style.display = 'none';
   document.getElementById('addBalanceModal').classList.add('open');
 }
@@ -3030,6 +3267,7 @@ function openAddBalanceModal(){
 async function submitAddBalance(){
   const email = document.getElementById('addBalUserSelect').value;
   const amount = parseFloat(document.getElementById('addBalAmount').value);
+  const senderName = (document.getElementById('addBalSenderName').value || '').trim();
   if(!email){ showNotif('Please select a user','error'); return; }
   if(isNaN(amount)||amount<1){ showNotif('Enter a valid amount','error'); return; }
 
@@ -3045,17 +3283,16 @@ async function submitAddBalance(){
     method:      'Wallet',
     status:      isVerified ? 'Approved' : 'Pending',
     grantedBy:   'Admin',
+    senderName:  senderName || null,
     submittedAt: Date.now()
   };
 
-  // Init pendingGrants array on user if needed
   if(!u.pendingGrants) u.pendingGrants = [];
   if(!u.receivedGrants) u.receivedGrants = [];
 
   if(isVerified){
     u.balance = (u.balance||0) + amount;
     u.receivedGrants.push(grant);
-    // Also push into deposits array so history picks it up
     deposits.push(grant);
     if(window.HelianceDB && window.HelianceDB.ready()){
       await Promise.all([
@@ -3073,10 +3310,11 @@ async function submitAddBalance(){
         window.HelianceDB.saveDeposit(grant)
       ]);
     }
-    showNotif(`⏳ $${amount.toLocaleString()} grant queued as Pending for ${u.name}. Approve once they verify.`,'success');
+    showNotif(`⏳ $${amount.toLocaleString()} grant queued as Pending for ${u.name}. Will auto-release once they deposit $1,000+.`,'success');
   }
 
   closeModal('addBalanceModal');
+  document.getElementById('addBalSenderName').value = '';
   updateAdminPanel();
 }
 
@@ -3134,6 +3372,223 @@ async function rejectPendingGrant(grantId){
     ]);
   }
   showNotif(`❌ Grant rejected for ${u.name}`,'error');
+  updateAdminPanel();
+}
+
+// ===== EDIT TRANSACTION HISTORY (ADMIN) =====
+let _editTxnEmail = null;
+let _editTxnList  = [];   // working copy of transactions for the open modal
+
+function openEditTxnModal(email){
+  const u = registeredUsers[email];
+  if(!u){ showNotif('User not found','error'); return; }
+  _editTxnEmail = email;
+
+  // Collect all transactions belonging to this user
+  const userDeposits    = deposits.filter(d => d.user === email);
+  const userWithdrawals = withdrawals.filter(w => w.user === email);
+  const userGrants      = [...(u.receivedGrants||[]), ...(u.pendingGrants||[])];
+
+  // Build a unified working list (deep copies so edits don't instantly mutate live data)
+  _editTxnList = [
+    ...userDeposits.map(t    => ({ ...t, _src: 'deposit' })),
+    ...userWithdrawals.map(t => ({ ...t, _src: 'withdrawal' })),
+    ...userGrants.filter(g   => !userDeposits.find(d => d.id === g.id))
+                 .map(t      => ({ ...t, _src: 'grant' }))
+  ].sort((a,b) => (b.submittedAt||0) - (a.submittedAt||0));
+
+  // Populate modal header
+  document.getElementById('editTxnAvatar').textContent  = u.name[0].toUpperCase();
+  document.getElementById('editTxnUserName').textContent = u.name;
+  document.getElementById('editTxnUserEmail').textContent = email;
+
+  // Set default date to today
+  document.getElementById('newTxnDate').value = new Date().toLocaleDateString();
+
+  renderEditTxnList();
+  document.getElementById('editTxnModal').classList.add('open');
+}
+
+function renderEditTxnList(){
+  const container = document.getElementById('editTxnList');
+  if(!container) return;
+
+  if(_editTxnList.length === 0){
+    container.innerHTML = '<p style="color:var(--muted);font-size:0.9rem;padding:12px 0;">No transactions yet.</p>';
+    return;
+  }
+
+  const typeColors = {
+    DEPOSIT:   'var(--accent)',
+    RECEIVED:  'var(--accent)',
+    WITHDRAW:  'var(--red)',
+    BUY:       'var(--accent2)',
+    SELL:      'var(--red)',
+    WHITELIST: 'var(--pink)'
+  };
+
+  container.innerHTML = _editTxnList.map((t,i) => {
+    const color = typeColors[t.type] || 'var(--muted)';
+    const statusOpts = ['Approved','Pending','Rejected'].map(s =>
+      `<option value="${s}" ${t.status===s?'selected':''}>${s}</option>`
+    ).join('');
+    const typeOpts = ['DEPOSIT','WITHDRAW','RECEIVED','BUY','SELL','WHITELIST'].map(tp =>
+      `<option value="${tp}" ${t.type===tp?'selected':''}>${tp}</option>`
+    ).join('');
+
+    return `
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select onchange="_editTxnList[${i}].type=this.value;renderEditTxnList()"
+          style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 8px;color:${color};font-family:'Rajdhani';font-weight:700;font-size:0.88rem;outline:none;">
+          ${typeOpts}
+        </select>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <span style="color:var(--muted);font-size:0.8rem;">$</span>
+          <input type="number" value="${t.amount||0}" min="0" step="any"
+            oninput="_editTxnList[${i}].amount=parseFloat(this.value)||0"
+            style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 8px;color:var(--text);font-family:'Share Tech Mono';font-size:0.88rem;width:100%;outline:none;">
+        </div>
+        <input type="text" value="${t.method||''}" placeholder="Method / Note"
+          oninput="_editTxnList[${i}].method=this.value"
+          style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 8px;color:var(--text);font-family:'Rajdhani';font-size:0.88rem;width:100%;outline:none;">
+        <select onchange="_editTxnList[${i}].status=this.value"
+          style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 8px;color:${t.status==='Approved'?'var(--green)':t.status==='Rejected'?'var(--red)':'var(--gold)'};font-family:'Rajdhani';font-weight:700;font-size:0.88rem;outline:none;">
+          ${statusOpts}
+        </select>
+        <button onclick="deleteTxnFromEdit(${i})" title="Delete transaction"
+          style="background:rgba(255,56,96,0.15);border:1px solid rgba(255,56,96,0.3);color:var(--red);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:1rem;line-height:1;">🗑</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+        <span style="font-size:0.72rem;color:var(--muted);font-family:'Share Tech Mono';">DATE:</span>
+        <input type="text" value="${t.date||''}" placeholder="Date"
+          oninput="_editTxnList[${i}].date=this.value"
+          style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--muted);font-family:'Share Tech Mono';font-size:0.78rem;width:160px;outline:none;">
+        <span style="font-size:0.72rem;color:var(--muted);font-family:'Share Tech Mono';margin-left:8px;">ID: ${t.id||'—'}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function deleteTxnFromEdit(idx){
+  if(!confirm('Delete this transaction? This cannot be undone after saving.')) return;
+  _editTxnList.splice(idx, 1);
+  renderEditTxnList();
+}
+
+function adminAddTxn(){
+  const type   = document.getElementById('newTxnType').value;
+  const amount = parseFloat(document.getElementById('newTxnAmount').value);
+  const method = document.getElementById('newTxnMethod').value.trim() || type;
+  const status = document.getElementById('newTxnStatus').value;
+  const date   = document.getElementById('newTxnDate').value.trim() || new Date().toLocaleDateString();
+
+  if(isNaN(amount) || amount < 0){ showNotif('Enter a valid amount','error'); return; }
+
+  const newTxn = {
+    id:          genId(),
+    user:        _editTxnEmail,
+    name:        (registeredUsers[_editTxnEmail]||{}).name || _editTxnEmail,
+    type,
+    amount,
+    method,
+    status,
+    date,
+    submittedAt: Date.now(),
+    _src:        'deposit'   // saved into the deposits collection
+  };
+
+  _editTxnList.unshift(newTxn);
+
+  // Clear add-form inputs
+  document.getElementById('newTxnAmount').value = '';
+  document.getElementById('newTxnMethod').value = '';
+  document.getElementById('newTxnDate').value   = new Date().toLocaleDateString();
+
+  renderEditTxnList();
+  showNotif('Transaction added — click "Save All Changes" to commit.','success');
+}
+
+async function saveEditedTxns(){
+  if(!_editTxnEmail){ showNotif('No user selected','error'); return; }
+  const u = registeredUsers[_editTxnEmail];
+  if(!u){ showNotif('User not found','error'); return; }
+
+  // 1. Identify deleted transactions so we can fully remove them from Firebase
+  const oldUserDeposits = deposits.filter(d => d.user === _editTxnEmail).map(d => d.id);
+  const oldUserWithdrawals = withdrawals.filter(w => w.user === _editTxnEmail).map(w => w.id);
+  const oldUserGrants = [...(u.receivedGrants||[]), ...(u.pendingGrants||[])].map(g => g.id);
+  const allOldIds = [...new Set([...oldUserDeposits, ...oldUserWithdrawals, ...oldUserGrants])];
+
+  const currentIds = _editTxnList.map(t => t.id);
+  const deletedIds = allOldIds.filter(id => !currentIds.includes(id));
+
+  // 2. Remove ALL existing transactions that belong to this user from global arrays
+  const keepDeposits    = deposits.filter(d => d.user !== _editTxnEmail);
+  const keepWithdrawals = withdrawals.filter(w => w.user !== _editTxnEmail);
+
+  // 3. Re-add from the edited list
+  const newDeposits    = [];
+  const newWithdrawals = [];
+
+  _editTxnList.forEach(t => {
+    const clean = { ...t };
+    delete clean._src;
+    if(t.type === 'WITHDRAW'){
+      newWithdrawals.push(clean);
+    } else {
+      newDeposits.push(clean);
+    }
+  });
+
+  deposits.splice(0, deposits.length, ...keepDeposits, ...newDeposits);
+  withdrawals.splice(0, withdrawals.length, ...keepWithdrawals, ...newWithdrawals);
+
+  // 4. FIX: Apply the actual EDITED data to the user's grant arrays (fixes the date not updating)
+  const updatedReceived = [];
+  const updatedPending = [];
+
+  _editTxnList.forEach(t => {
+    if (t.type === 'RECEIVED') {
+      const clean = { ...t };
+      delete clean._src;
+      if (t.status === 'Approved') {
+        updatedReceived.push(clean);
+      } else {
+        updatedPending.push(clean);
+      }
+    }
+  });
+
+  u.receivedGrants = updatedReceived;
+  u.pendingGrants = updatedPending;
+
+  // 5. Persist to Firestore
+  if(window.HelianceDB && window.HelianceDB.ready()){
+    const fbOps = [];
+
+    // Save edited/new ones
+    newDeposits.forEach(d => fbOps.push(window.HelianceDB.saveDeposit(d)));
+    newWithdrawals.forEach(w => fbOps.push(window.HelianceDB.saveWithdrawal(w)));
+    fbOps.push(window.HelianceDB.saveUser(_editTxnEmail, u));
+
+    // FIX: Delete removed ones from Firebase so they don't come back on refresh
+    if (window._firebaseReady) {
+        import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js").then(module => {
+            const { getFirestore, doc, deleteDoc } = module;
+            const db = getFirestore();
+            deletedIds.forEach(id => {
+                deleteDoc(doc(db, "deposits", id)).catch(()=>{});
+                deleteDoc(doc(db, "withdrawals", id)).catch(()=>{});
+            });
+        }).catch(()=>{});
+    }
+
+    try { await Promise.all(fbOps); } catch(e){ console.warn('Partial Firestore save:', e); }
+  }
+
+  showNotif(`✅ Transaction history saved for ${u.name}`, 'success');
+  closeModal('editTxnModal');
   updateAdminPanel();
 }
 
