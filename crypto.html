@@ -2072,6 +2072,7 @@ function updateTierUI(tierInfo, invested){
   if(dashBadge){ dashBadge.textContent = badgeText; dashBadge.className = 'tier-badge ' + (current.cls || ''); }
 
   // Verified / Unverified — requires $1,000+ invested (approved deposit)
+ // Verified / Unverified — requires $1,000+ invested (approved deposit)
   const isVerified = invested >= 1000;
   const verifiedText = isVerified ? '✅ Verified' : '🔒 Unverified';
   const verifiedCls  = isVerified ? 'tier-badge badge-verified' : 'tier-badge badge-unverified';
@@ -2080,13 +2081,27 @@ function updateTierUI(tierInfo, invested){
   if(navVBadge){  navVBadge.textContent  = verifiedText; navVBadge.className  = verifiedCls + ' ' + (navVBadge.getAttribute('style') ? '' : ''); navVBadge.style.fontSize='0.65rem'; navVBadge.style.padding='3px 8px'; }
   if(dashVBadge){ dashVBadge.textContent = verifiedText; dashVBadge.className = verifiedCls; dashVBadge.style.fontSize='0.72rem'; dashVBadge.style.padding='3px 10px'; }
 
+  // Dynamic calculation for the remaining amount needed
+  const remainingNeeded = Math.max(0, 1000 - invested);
+  const dynamicDesc = `Your account is <strong style="color:var(--red);">Unverified</strong>. You must deposit <strong style="color:var(--text);">$${remainingNeeded.toLocaleString()} USD</strong> more and have it approved to be verified.`;
+
   // Show/hide dashboard unverified banner
   const dashBanner = document.getElementById('dashUnverifiedBanner');
-  if(dashBanner) dashBanner.style.display = isVerified ? 'none' : 'flex';
+  if(dashBanner) {
+    dashBanner.style.display = isVerified ? 'none' : 'flex';
+    if(!isVerified && dashBanner.children[1] && dashBanner.children[1].children[1]) {
+       dashBanner.children[1].children[1].innerHTML = dynamicDesc;
+    }
+  }
 
   // Show/hide withdrawal not-eligible banner
   const wBanner = document.getElementById('withdrawUnverifiedBanner');
-  if(wBanner) wBanner.style.display = isVerified ? 'none' : 'flex';
+  if(wBanner) {
+    wBanner.style.display = isVerified ? 'none' : 'flex';
+    if(!isVerified && wBanner.children[1] && wBanner.children[1].children[1]) {
+       wBanner.children[1].children[1].innerHTML = dynamicDesc;
+    }
+  }
 
   document.getElementById('tierMultiplier').textContent = isNone ? '—' : fmtMult(multiplier);
   document.getElementById('tierMultiplierLabel').textContent = isNone
