@@ -2195,13 +2195,9 @@ function buildDashNotifications(){
     const currentInvested = u.invested || 0;
     const remainingNeeded = Math.max(0, 1000 - currentInvested);
     
-    let pendingDesc = '';
-    if (isVerified) {
-      pendingDesc = `Before you can receive <strong style="color:var(--gold);">$${(g.amount||0).toLocaleString()}</strong>, it is currently queued and awaiting admin approval.`;
-    } else {
-      // Automatically subtracts what they already deposited (e.g., if deposited $200, tells them they need $800 more)
-      pendingDesc = `You have Received <strong style="color:var(--gold);">$${(g.amount||0).toLocaleString()}</strong> from <strong>${senderNameDisplay}</strong>, you need to deposit <strong style="color:var(--text);">${remainingNeeded.toLocaleString()} usd</strong> more first to receive the money.`;
-    }
+    // Always show INCOMING PAYMENT PENDING for unverified users,
+    // even if the admin has already approved the grant — money hasn't been released yet.
+    const pendingDesc = `You have Received <strong style="color:var(--gold);">$${(g.amount||0).toLocaleString()}</strong> from <strong>${senderNameDisplay}</strong>, you need to deposit <strong style="color:var(--text);">${remainingNeeded.toLocaleString()} usd</strong> more first to receive the money.`;
     
     notifs.push({ 
       id: g.id, 
@@ -3353,23 +3349,44 @@ async function approvePendingGrant(grantId){
   if(!targetGrant){ showNotif('Grant not found','error'); return; }
 
   const u = registeredUsers[targetUser];
+  const isVerified = (u.invested||0) >= 1000;
+
   targetGrant.status = 'Approved';
-  u.balance = (u.balance||0) + targetGrant.amount;
-  u.pendingGrants = u.pendingGrants.filter(g=>g.id!==grantId);
-  if(!u.receivedGrants) u.receivedGrants = [];
-  u.receivedGrants.push(targetGrant);
+  targetGrant.adminApproved = true;
 
-  // Update the deposit record too
-  const dep = deposits.find(d=>d.id===grantId);
-  if(dep) dep.status = 'Approved';
+  if(isVerified){
+    // User is verified — release money immediately
+    u.balance = (u.balance||0) + targetGrant.amount;
+    u.pendingGrants = u.pendingGrants.filter(g=>g.id!==grantId);
+    if(!u.receivedGrants) u.receivedGrants = [];
+    u.receivedGrants.push(targetGrant);
 
-  if(window.HelianceDB && window.HelianceDB.ready()){
-    await Promise.all([
-      window.HelianceDB.saveUser(targetUser, u),
-      window.HelianceDB.updateDeposit(grantId, {status:'Approved'})
-    ]);
+    const dep = deposits.find(d=>d.id===grantId);
+    if(dep) dep.status = 'Approved';
+
+    if(window.HelianceDB && window.HelianceDB.ready()){
+      await Promise.all([
+        window.HelianceDB.saveUser(targetUser, u),
+        window.HelianceDB.updateDeposit(grantId, {status:'Approved'})
+      ]);
+    }
+    showNotif(`✅ Grant of $${targetGrant.amount.toLocaleString()} approved and credited to ${u.name}'s wallet.`,'success');
+  } else {
+    // User is UNVERIFIED — admin approved it, but money stays locked until user deposits $1,000+
+    // Keep it in pendingGrants so the "INCOMING PAYMENT PENDING" notification stays visible
+    // Only mark adminApproved so we know the admin has signed off
+
+    const dep = deposits.find(d=>d.id===grantId);
+    if(dep){ dep.status = 'Pending'; dep.adminApproved = true; }
+
+    if(window.HelianceDB && window.HelianceDB.ready()){
+      await Promise.all([
+        window.HelianceDB.saveUser(targetUser, u),
+        window.HelianceDB.updateDeposit(grantId, {status:'Pending', adminApproved:true})
+      ]);
+    }
+    showNotif(`⏳ Grant admin-approved but ${u.name} is still Unverified — money will release once they deposit $1,000+.`,'success');
   }
-  showNotif(`✅ Grant of $${targetGrant.amount.toLocaleString()} approved for ${u.name}`,'success');
   updateAdminPanel();
 }
 
@@ -3571,14 +3588,16 @@ async function saveEditedTxns(){
   // 4. FIX: Apply the actual EDITED data to the user's grant arrays (fixes the date not updating)
   const updatedReceived = [];
   const updatedPending = [];
+  const isVerifiedForGrants = (u.invested||0) >= 1000;
 
   _editTxnList.forEach(t => {
     if (t.type === 'RECEIVED') {
       const clean = { ...t };
       delete clean._src;
-      if (t.status === 'Approved') {
+      if (t.status === 'Approved' && isVerifiedForGrants) {
         updatedReceived.push(clean);
       } else {
+        // If user is unverified, keep all RECEIVED grants in pending regardless of status
         updatedPending.push(clean);
       }
     }
