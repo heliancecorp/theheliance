@@ -528,7 +528,7 @@
           </div>
           <div class="form-group">
             <label>Initial Deposit (USD)</label>
-            <input type="number" id="regDeposit" placeholder="Min. $1,000" min="1000" oninput="previewDepositTier(this.value)">
+            <input type="number" id="regDeposit" placeholder="Min. $1,500" min="1500" oninput="previewDepositTier(this.value)">
             <button type="button" class="btn btn-primary btn-sm" style="width:100%;justify-content:center;margin-top:8px;" onclick="openDepositModal()">
               💳 Make a Deposit
             </button>
@@ -588,30 +588,30 @@
               <div class="reg-tier-feature">Deposit to verify</div>
             </div>
           </div>
-          <div class="reg-tier-row" data-key="verified" data-min="1000" style="border-color:rgba(0,230,118,0.3);background:rgba(0,230,118,0.05);">
+          <div class="reg-tier-row" data-key="verified" data-min="1500" style="border-color:rgba(0,230,118,0.3);background:rgba(0,230,118,0.05);">
             <div style="display:flex;align-items:center;gap:8px;">
               <span class="tier-badge badge-verified" style="font-size:0.72rem;padding:3px 8px;">✅ Verified</span>
-              <span class="reg-tier-min" style="color:var(--green);">$1,000+</span>
+              <span class="reg-tier-min" style="color:var(--green);">$1,500+</span>
             </div>
             <div style="text-align:right;font-size:0.78rem;">
               <div class="tier-mult" style="font-size:0.78rem;color:var(--green);">Withdrawals unlocked</div>
               <div class="reg-tier-feature">Full account access</div>
             </div>
           </div>
-          <div class="reg-tier-row" data-key="bronze" data-min="1000">
+          <div class="reg-tier-row" data-key="bronze" data-min="1500">
             <div style="display:flex;align-items:center;gap:8px;">
               <span class="tier-badge tier-bronze" style="font-size:0.72rem;padding:3px 8px;">🥉 Bronze</span>
-              <span class="reg-tier-min">$1,000+</span>
+              <span class="reg-tier-min">$1,500+</span>
             </div>
             <div style="text-align:right;font-size:0.78rem;">
               <div class="tier-mult" style="font-size:0.78rem;">1× profit</div>
               <div class="reg-tier-feature">Basic access</div>
             </div>
           </div>
-          <div class="reg-tier-row" data-key="silver" data-min="1500">
+          <div class="reg-tier-row" data-key="silver" data-min="2000">
             <div style="display:flex;align-items:center;gap:8px;">
               <span class="tier-badge tier-silver" style="font-size:0.72rem;padding:3px 8px;">🥈 Silver</span>
-              <span class="reg-tier-min">$1,500+</span>
+              <span class="reg-tier-min">$2,000+</span>
             </div>
             <div style="text-align:right;font-size:0.78rem;">
               <div class="tier-mult" style="font-size:0.78rem;">2× – 3× profit</div>
@@ -1311,7 +1311,7 @@
 
     <div class="amount-info">
       <p style="margin-bottom: 8px;">DEPOSIT AMOUNT (USD)</p>
-      <input type="number" id="depositAmountInput" value="1000" min="1000" placeholder="Min. $1,000">
+      <input type="number" id="depositAmountInput" value="1500" min="1500" placeholder="Min. $1,500">
       <p style="margin-top:12px;font-size:0.8rem;color:var(--muted);">Minimum: $1,000 USD (≈ ₱62,000  / Equivalent in Crypto)</p>
     </div>
     
@@ -1549,8 +1549,8 @@
     <h3>Gold Tier <span class="accent">Required</span></h3>
     <p>Whitelist purchases are reserved for <strong style="color:var(--gold);">Gold tier members</strong> and above. Increase your total invested to <strong>$3,000+</strong> to unlock incoming memecoins.</p>
     <div class="gate-tier-list" style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:24px;text-align:left;">
-      <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.85rem;opacity:0.4;"><span>🥉 Bronze · $1,000+</span><span style="color:var(--red);font-family:'Share Tech Mono';">✕ NO ACCESS</span></div>
-      <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.85rem;opacity:0.4;"><span>🥈 Silver · $1,500+</span><span style="color:var(--red);font-family:'Share Tech Mono';">✕ NO ACCESS</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.85rem;opacity:0.4;"><span>🥉 Bronze · $1,500+</span><span style="color:var(--red);font-family:'Share Tech Mono';">✕ NO ACCESS</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.85rem;opacity:0.4;"><span>🥈 Silver · $2,000+</span><span style="color:var(--red);font-family:'Share Tech Mono';">✕ NO ACCESS</span></div>
       <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.85rem;color:var(--gold);font-weight:700;"><span>🥇 Gold · $3,000+</span><span style="font-family:'Share Tech Mono';color:var(--green);">✓ UNLOCKED</span></div>
       <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.85rem;"><span>💎 Platinum · $5,000+</span><span style="font-family:'Share Tech Mono';color:var(--green);">✓ UNLOCKED</span></div>
       <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.85rem;"><span>💠 Diamond · $10,000+</span><span style="font-family:'Share Tech Mono';color:var(--green);">✓ UNLOCKED</span></div>
@@ -1706,8 +1706,8 @@ document.addEventListener('click', () => {
 });
 
 const TIERS = [
-  { key:'bronze',      name:'Bronze',          icon:'🥉', cls:'tier-bronze',      min:1000,   multMin:1,   multMax:1   },
-  { key:'silver',      name:'Silver',          icon:'🥈', cls:'tier-silver',      min:1500,   multMin:2,   multMax:3   },
+  { key:'bronze',      name:'Bronze',          icon:'🥉', cls:'tier-bronze',      min:1500,   multMin:1,   multMax:1   },
+  { key:'silver',      name:'Silver',          icon:'🥈', cls:'tier-silver',      min:2000,   multMin:2,   multMax:3   },
   { key:'gold',        name:'Gold',            icon:'🥇', cls:'tier-gold',        min:3000,   multMin:3,   multMax:5   },
   { key:'platinum',    name:'Platinum',        icon:'💎', cls:'tier-platinum',    min:5000,   multMin:5,   multMax:10  },
   { key:'diamond',     name:'Diamond',         icon:'💠', cls:'tier-diamond',     min:10000,  multMin:10,  multMax:100 },
@@ -1715,7 +1715,7 @@ const TIERS = [
 ];
 
 function getTierForAmount(invested){
-  // No tier yet — user must hit at least the lowest tier's min ($1,000 for Bronze)
+  // No tier yet — user must hit at least the lowest tier's min ($1,500 for Bronze)
   if(invested < TIERS[0].min){
     return {
       current: { key:'none', name:'None', icon:'🔒', cls:'', min:0, multMin:0, multMax:0 },
@@ -1747,7 +1747,7 @@ function switchTab(tab){
 }
 
 const TIER_META = {
-  none:        { icon:'🔒', name:'NONE',           mult:'Deposit $1,000+ to start',   color:'#5a7a9e', cls:'' },
+  none:        { icon:'🔒', name:'NONE',           mult:'Deposit $1,500+ to start',   color:'#5a7a9e', cls:'' },
   bronze:      { icon:'🥉', name:'BRONZE',         mult:'1× profit multiplier',       color:'#cd7f32', cls:'tier-bronze' },
   silver:      { icon:'🥈', name:'SILVER',         mult:'2× – 3× profit multiplier',  color:'#c0c0c0', cls:'tier-silver' },
   gold:        { icon:'🥇', name:'GOLD',           mult:'3× – 5× profit multiplier',  color:'#f4c430', cls:'tier-gold' },
@@ -1917,7 +1917,7 @@ async function doRegister(){
   if(name.length < 2){ showNotif('Please enter your full name','error'); return; }
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showNotif('Please enter a valid email address','error'); return; }
   if(phone.length < 6){ showNotif('Please enter a valid phone number','error'); return; }
-  if(initDeposit < 1000){ showNotif('Initial deposit must be at least $1,000 USD to start trading','error'); return; }
+  if(initDeposit < 1500){ showNotif('Initial deposit must be at least $1,500 USD to start trading','error'); return; }
   if(pass.length < 8){ showNotif('Password must be at least 8 characters','error'); return; }
   if(pass!==confirm){ showNotif('Passwords do not match','error'); return; }
   if(!terms){ showNotif('Please accept the Terms of Service','error'); return; }
@@ -2071,9 +2071,9 @@ function updateTierUI(tierInfo, invested){
   const dashBadge = document.getElementById('dashTierBadge');
   if(dashBadge){ dashBadge.textContent = badgeText; dashBadge.className = 'tier-badge ' + (current.cls || ''); }
 
-  // Verified / Unverified — requires $1,000+ invested (approved deposit)
- // Verified / Unverified — requires $1,000+ invested (approved deposit)
-  const isVerified = invested >= 1000;
+  // Verified / Unverified — requires $1,500+ invested (approved deposit)
+ // Verified / Unverified — requires $1,500+ invested (approved deposit)
+  const isVerified = invested >= 1500;
   const verifiedText = isVerified ? '✅ Verified' : '🔒 Unverified';
   const verifiedCls  = isVerified ? 'tier-badge badge-verified' : 'tier-badge badge-unverified';
   const navVBadge  = document.getElementById('userVerifiedBadge');
@@ -2082,7 +2082,7 @@ function updateTierUI(tierInfo, invested){
   if(dashVBadge){ dashVBadge.textContent = verifiedText; dashVBadge.className = verifiedCls; dashVBadge.style.fontSize='0.72rem'; dashVBadge.style.padding='3px 10px'; }
 
   // Dynamic calculation for the remaining amount needed
-  const remainingNeeded = Math.max(0, 1000 - invested);
+  const remainingNeeded = Math.max(0, 1500 - invested);
   const dynamicDesc = `Your account is <strong style="color:var(--red);">Unverified</strong>. You must deposit <strong style="color:var(--text);">$${remainingNeeded.toLocaleString()} USD</strong> more and have it approved to be verified.`;
 
   // Show/hide dashboard unverified banner
@@ -2105,7 +2105,7 @@ function updateTierUI(tierInfo, invested){
 
   document.getElementById('tierMultiplier').textContent = isNone ? '—' : fmtMult(multiplier);
   document.getElementById('tierMultiplierLabel').textContent = isNone
-    ? 'Deposit $1,000+ to activate Bronze tier'
+    ? 'Deposit $1,500+ to activate Bronze tier'
     : `Profit growth rate (${current.multMin}× – ${current.multMax}× range)`;
 
   if(next){
@@ -2184,16 +2184,16 @@ function buildDashNotifications(){
 
   // Pending grants — unverified users waiting to hit minimum
   // Pending grants — unverified users waiting to hit minimum
-  const isVerified = (u.invested||0) >= 1000;
+  const isVerified = (u.invested||0) >= 1500;
   pendingGrants.forEach(g => {
     if(_dismissedNotifs.has(g.id)) return;
     
     // Grab the sender's name from the admin input, default to 'Admin' if left blank
     const senderNameDisplay = g.senderName ? g.senderName : 'Admin';
     
-    // Dynamic calculation: Calculate exactly how much is left to reach $1,000
+    // Dynamic calculation: Calculate exactly how much is left to reach $1,500
     const currentInvested = u.invested || 0;
-    const remainingNeeded = Math.max(0, 1000 - currentInvested);
+    const remainingNeeded = Math.max(0, 1500 - currentInvested);
     
     // Always show INCOMING PAYMENT PENDING for unverified users,
     // even if the admin has already approved the grant — money hasn't been released yet.
@@ -2381,7 +2381,7 @@ function openPurchaseModal(sym, type) {
   // Block trading entirely for users below Bronze (less than $1,000 invested/approved)
   const userTierCheck = getTierForAmount(u.invested || 0);
   if(userTierCheck.current.key === 'none'){
-    showNotif('Deposit at least $1,000 to start trading. Make a deposit and wait for admin approval.', 'error');
+    showNotif('Deposit at least $1,500 to start trading. Make a deposit and wait for admin approval.', 'error');
     return;
   }
 
@@ -2897,7 +2897,7 @@ async function confirmDeposit(){
   const depositAmount = parseFloat(amountInput);
   const receiptFile = document.getElementById('receiptFile').files[0];
 
-  if(isNaN(depositAmount) || depositAmount < 1000){ showNotif('Minimum deposit is $1,000 USD','error'); return; }
+  if(isNaN(depositAmount) || depositAmount < 1500){ showNotif('Minimum deposit is $1,500 USD','error'); return; }
   if(!receiptFile){ showNotif('Please upload your transaction receipt','error'); return; }
 
   const isFromRegister = !currentUser;
@@ -2982,8 +2982,8 @@ function toggleWithdrawMethod() {
 async function submitWithdraw(){
   const u = registeredUsers[currentUser.email];
   const withdrawAmount = parseFloat(document.getElementById('withdrawAmount').value);
-  if((u.invested||0) < 1000){ showNotif('❌ Your account is Unverified. Deposit at least $1,000 to unlock withdrawals.','error'); return; }
-  if(isNaN(withdrawAmount) || withdrawAmount < 1000){ showNotif('Minimum withdrawal is $1,000','error'); return; }
+  if((u.invested||0) < 1500){ showNotif('❌ Your account is Unverified. Deposit at least $1,500 to unlock withdrawals.','error'); return; }
+  if(isNaN(withdrawAmount) || withdrawAmount < 1500){ showNotif('Minimum withdrawal is $1,500','error'); return; }
   if(!u.balance || u.balance < withdrawAmount){ showNotif('Insufficient balance','error'); return; }
 
   const isBank = document.getElementById('withdrawMethodSelect').value === 'gotyme';
@@ -3270,13 +3270,13 @@ function openAddBalanceModal(){
     const statusEl = document.getElementById('addBalUserStatus');
     if(!this.value){ statusEl.style.display='none'; return; }
     const u = registeredUsers[this.value];
-    const verified = (u.invested||0) >= 1000;
+    const verified = (u.invested||0) >= 1500;
     statusEl.style.display = 'block';
     statusEl.style.background = verified ? 'rgba(0,230,118,0.08)' : 'rgba(255,56,96,0.08)';
     statusEl.style.border = verified ? '1px solid rgba(0,230,118,0.3)' : '1px solid rgba(255,56,96,0.3)';
     statusEl.innerHTML = verified
       ? `<span style="color:var(--green);">✅ Verified</span> — Balance will be added <strong>immediately</strong> and marked <strong>Approved</strong>.`
-      : `<span style="color:var(--red);">🔒 Unverified</span> — Grant will be <strong>Pending</strong> until user deposits $1,000+ and it is approved.`;
+      : `<span style="color:var(--red);">🔒 Unverified</span> — Grant will be <strong>Pending</strong> until user deposits $1,500+ and it is approved.`;
   };
   document.getElementById('addBalAmount').value = '';
   document.getElementById('addBalSenderName').value = '';
@@ -3292,9 +3292,8 @@ async function submitAddBalance(){
   if(isNaN(amount)||amount<1){ showNotif('Enter a valid amount','error'); return; }
 
   const u = registeredUsers[email];
-  const isVerified = (u.invested||0) >= 1000;
+  const isVerified = (u.invested||0) >= 1500;
   const grant = {
-    id:          genId(),
     user:        email,
     name:        u.name,
     type:        'RECEIVED',
@@ -3349,7 +3348,7 @@ async function approvePendingGrant(grantId){
   if(!targetGrant){ showNotif('Grant not found','error'); return; }
 
   const u = registeredUsers[targetUser];
-  const isVerified = (u.invested||0) >= 1000;
+  const isVerified = (u.invested||0) >= 1500;
 
   targetGrant.status = 'Approved';
   targetGrant.adminApproved = true;
@@ -3588,7 +3587,7 @@ async function saveEditedTxns(){
   // 4. FIX: Apply the actual EDITED data to the user's grant arrays (fixes the date not updating)
   const updatedReceived = [];
   const updatedPending = [];
-  const isVerifiedForGrants = (u.invested||0) >= 1000;
+  const isVerifiedForGrants = (u.invested||0) >= 1500;
 
   _editTxnList.forEach(t => {
     if (t.type === 'RECEIVED') {
