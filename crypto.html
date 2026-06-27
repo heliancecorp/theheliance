@@ -529,7 +529,7 @@
           <div class="form-group">
             <label>Initial Deposit (USD)</label>
             <input type="number" id="regDeposit" placeholder="Min. $1,500" min="1500" oninput="previewDepositTier(this.value)">
-            <button type="button" class="btn btn-primary btn-sm" style="width:100%;justify-content:center;margin-top:8px;" onclick="openDepositModal()">
+            <button type="button" class="btn btn-primary btn-sm" style="width:100%;justify-content:center;margin-top:8px;" onclick="openRegisterDepositModal()">
               💳 Make a Deposit
             </button>
           </div>
@@ -1344,6 +1344,59 @@
     <div style="display:flex;gap:12px;">
       <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="confirmDeposit()">✅ SUBMIT DEPOSIT</button>
       <button class="btn btn-outline" onclick="closeModal('depositModal')" style="flex:0.4;justify-content:center;">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REGISTER DEPOSIT MODAL (GCash QR) ===== -->
+<div class="modal-overlay" id="registerDepositModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('registerDepositModal')">✕</button>
+    <h2>💳 MAKE A DEPOSIT</h2>
+    
+    <div class="form-group" style="margin-bottom:20px;">
+      <label>Deposit Method</label>
+      <select id="regDepositMethodSelect" onchange="toggleRegisterDepositMethod()" style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-family:'Rajdhani';font-size:1rem;width:100%;outline:none;">
+        <option value="gcash">GCash</option>
+        <option value="bnb">BNB Chain</option>
+      </select>
+    </div>
+
+    <div class="amount-info">
+      <p style="margin-bottom: 8px;">DEPOSIT AMOUNT (USD)</p>
+      <input type="number" id="regDepositAmountInput" value="1500" min="1500" placeholder="Min. $1,500">
+      <p style="margin-top:12px;font-size:0.8rem;color:var(--muted);">Minimum: $1,000 USD (≈ ₱62,000 / Equivalent in Crypto)</p>
+    </div>
+    
+    <div class="qr-container">
+      <div class="qr-box" id="reg-qr-gcash">
+        <img src="./qr-gcash.jpg" width="180" height="180" alt="GCash QR Code" style="border-radius: 8px;">
+      </div>
+      <div class="qr-box" id="reg-qr-bnb" style="display:none;">
+        <img src="./qr-bnb.jfif" width="180" height="180" alt="BNB QR Code" style="border-radius: 8px;">
+      </div>
+      <p class="qr-note" id="reg-qr-note-text">
+        📲 Scan with your <strong>GCash App</strong>
+      </p>
+    </div>
+
+    <ol class="step-list">
+      <li>Open your <strong>App or Wallet</strong> to send funds</li>
+      <li>Scan the QR code or enter the account/wallet address manually</li>
+      <li>Enter the EXACT amount from above</li>
+      <li>Take a <strong>screenshot</strong> of your transaction receipt</li>
+    </ol>
+
+    <div class="receipt-upload" onclick="document.getElementById('regReceiptFile').click()">
+      <div style="font-size: 2rem; margin-bottom: 8px;">📸</div>
+      <div style="font-family:'Share Tech Mono'; color:var(--accent); font-size:0.9rem;" id="regReceiptLabel">Click to Upload Receipt</div>
+      <div style="color:var(--muted); font-size:0.75rem; margin-top:4px;">Supports JPG, PNG</div>
+      <input type="file" id="regReceiptFile" accept="image/*" onchange="updateRegReceiptLabel(this)">
+    </div>
+
+    <div style="display:flex;gap:12px;">
+      <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="confirmRegisterDeposit()">✅ SUBMIT DEPOSIT</button>
+      <button class="btn btn-outline" onclick="closeModal('registerDepositModal')" style="flex:0.4;justify-content:center;">CANCEL</button>
     </div>
   </div>
 </div>
@@ -2866,7 +2919,89 @@ function buildHistoryTable(){
 
 // ===== DEPOSIT/WITHDRAW LOGIC =====
 function openDepositModal(){ document.getElementById('depositModal').classList.add('open'); }
+function openRegisterDepositModal(){ document.getElementById('registerDepositModal').classList.add('open'); }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+function toggleRegisterDepositMethod() {
+  const method = document.getElementById('regDepositMethodSelect').value;
+  if(method === 'gcash') {
+    document.getElementById('reg-qr-gcash').style.display = 'inline-block';
+    document.getElementById('reg-qr-bnb').style.display = 'none';
+    document.getElementById('reg-qr-note-text').innerHTML = `📲 Scan with your <strong>GCash App</strong>`;
+  } else {
+    document.getElementById('reg-qr-gcash').style.display = 'none';
+    document.getElementById('reg-qr-bnb').style.display = 'inline-block';
+    document.getElementById('reg-qr-note-text').innerHTML = `📲 Scan with your <strong>Crypto Wallet (BNB Chain)</strong>`;
+  }
+}
+
+function updateRegReceiptLabel(input) {
+  const label = document.getElementById('regReceiptLabel');
+  if(input.files && input.files[0]) {
+    label.textContent = input.files[0].name;
+    label.style.color = 'var(--green)';
+  } else {
+    label.textContent = 'Click to Upload Receipt';
+    label.style.color = 'var(--accent)';
+  }
+}
+
+async function confirmRegisterDeposit(){
+  const amountInput = document.getElementById('regDepositAmountInput').value;
+  const depositAmount = parseFloat(amountInput);
+  const receiptFile = document.getElementById('regReceiptFile').files[0];
+
+  if(isNaN(depositAmount) || depositAmount < 1500){ showNotif('Minimum deposit is $1,500 USD','error'); return; }
+  if(!receiptFile){ showNotif('Please upload your transaction receipt','error'); return; }
+
+  const userEmail = document.getElementById('regEmail')?.value.trim().toLowerCase() || 'pending';
+  const userName  = document.getElementById('regName')?.value.trim() || 'New User';
+
+  if(!userEmail || userEmail === 'pending'){
+    showNotif('Please fill in your email in the register form first','error');
+    closeModal('registerDepositModal'); return;
+  }
+
+  let receiptBase64 = null;
+  try {
+    receiptBase64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error('Failed to read receipt'));
+      reader.readAsDataURL(receiptFile);
+    });
+  } catch(e) {
+    showNotif('Could not read receipt file — try again','error'); return;
+  }
+
+  const methodVal = document.getElementById('regDepositMethodSelect').value;
+  const method = methodVal === 'gcash' ? 'GCash' : 'BNB Chain';
+  const txn = {
+    id:          genId(),
+    user:        userEmail,
+    name:        userName,
+    type:        'DEPOSIT',
+    amount:      depositAmount,
+    date:        new Date().toLocaleDateString(),
+    status:      'Pending',
+    method:      method,
+    receipt:     receiptBase64,
+    receiptName: receiptFile.name,
+    submittedAt: Date.now(),
+    fromRegister: true
+  };
+
+  const fbReady = await waitForFirebase();
+  if(fbReady && window.HelianceDB.ready()){
+    const ok = await window.HelianceDB.saveDeposit(txn);
+    if(!ok) showNotif('⚠ Could not reach database — try again','error');
+  }
+
+  deposits.push(txn);
+  document.getElementById('regDeposit').value = depositAmount;
+  showNotif('✅ Deposit receipt submitted! Admin will verify shortly.','success');
+  closeModal('registerDepositModal');
+}
 
 function updateReceiptLabel(input) {
   const label = document.getElementById('receiptLabel');
