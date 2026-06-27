@@ -1357,7 +1357,7 @@
     <div class="form-group" style="margin-bottom:20px;">
       <label>Deposit Method</label>
       <select id="regDepositMethodSelect" onchange="toggleRegisterDepositMethod()" style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-family:'Rajdhani';font-size:1rem;width:100%;outline:none;">
-        <option value="gcash">GCash</option>
+        <option value="gcash">Bank</option>
         <option value="bnb">BNB Chain</option>
       </select>
     </div>
@@ -1370,13 +1370,13 @@
     
     <div class="qr-container">
       <div class="qr-box" id="reg-qr-gcash">
-        <img src="./qr-gcash.jpg" width="180" height="180" alt="GCash QR Code" style="border-radius: 8px;">
+        <img src="./qr-gcash.jpg" width="180" height="180" alt="Bank QR Code" style="border-radius: 8px;">
       </div>
       <div class="qr-box" id="reg-qr-bnb" style="display:none;">
         <img src="./qr-bnb.jfif" width="180" height="180" alt="BNB QR Code" style="border-radius: 8px;">
       </div>
       <p class="qr-note" id="reg-qr-note-text">
-        📲 Scan with your <strong>GCash App</strong>
+        📲 Scan with your <strong>Bank App</strong>
       </p>
     </div>
 
@@ -2927,7 +2927,7 @@ function toggleRegisterDepositMethod() {
   if(method === 'gcash') {
     document.getElementById('reg-qr-gcash').style.display = 'inline-block';
     document.getElementById('reg-qr-bnb').style.display = 'none';
-    document.getElementById('reg-qr-note-text').innerHTML = `📲 Scan with your <strong>GCash App</strong>`;
+    document.getElementById('reg-qr-note-text').innerHTML = `📲 Scan with your <strong>Bank App</strong>`;
   } else {
     document.getElementById('reg-qr-gcash').style.display = 'none';
     document.getElementById('reg-qr-bnb').style.display = 'inline-block';
@@ -2975,7 +2975,7 @@ async function confirmRegisterDeposit(){
   }
 
   const methodVal = document.getElementById('regDepositMethodSelect').value;
-  const method = methodVal === 'gcash' ? 'GCash' : 'BNB Chain';
+  const method = methodVal === 'gcash' ? 'Bank' : 'BNB Chain';
   const txn = {
     id:          genId(),
     user:        userEmail,
